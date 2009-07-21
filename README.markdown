@@ -4,7 +4,7 @@ RubyRobot Project
 What's it
 ---------
 
-RubyRobot is a project in development at the University of Trento aimed at building a 3(+) DoF robot with sequential kinematic, using [Arduino](http://arduino.cc) as low-level controller and Ruby as language for high level controller.
+RubyRobot is a project in development at the [University of Trento](http://meccablog.ing.unitn.it) aimed at building a 3(+) DoF robot with sequential kinematic, using [Arduino](http://arduino.cc) as low-level controller and Ruby as language for high level controller.
 
 Contents
 --------
