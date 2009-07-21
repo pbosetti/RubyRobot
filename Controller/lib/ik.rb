@@ -13,12 +13,14 @@ module RubyRobot
   
   class Robot
     attr_accessor :l, :home, :pose, :limits
+    attr_accessor :joints
     attr_reader :wrist
     def initialize(cfg={})
       @l =      cfg[:l]     
       @home =   cfg[:theta] 
       @limits = cfg[:limits]
       @pose =   {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0}  
+      @joints = Array.new(3,0.0)
     end
   end
   
@@ -39,7 +41,20 @@ module RubyRobot
       sol[1][0] = atan2(@wrist[1], @wrist[0]) - atan2(-k2, k1)
       sol[0][2] = @pose[:phi] - (sol[0][0] + sol[0][1])
       sol[1][2] = @pose[:phi] - (sol[1][0] + sol[1][1])
-      sol
+      @joints = sol
+    end
+  end
+  
+  class Puma560 < Planar3R
+    def ik(pose=@pose)
+      @pose = pose
+      theta = atan2(@pose[:y],@pose[:x])
+      r     = sqrt(pose[:x]**2+pose[:y]**2)
+      super({:x=> r, :z => @pose[:z], :phi => @pose[:phi]})
+      @wrist = [@wrist[0]*cos(theta),@wrist[0]*sin(theta),@wrist[1]]
+      @joints[0].insert 0, theta
+      @joints[1].insert 0, theta
+      @joints
     end
   end
 end
@@ -55,12 +70,12 @@ if ($0 == __FILE__)
       [-90.0.to_rad, 90.0.to_rad]
     ]
   }
-  r = Planar3R.new(config)
-  target = {:x=>100.0, :z => -10.0, :phi => 270.0.to_rad}
-  ik = r.ik(target)
+  r = Puma560.new(config)
+  target = {:x=>100.0, :y => 100.0, :z => -10.0, :phi => -90.0.to_rad}
+  r.ik(target)
   puts "Inverse kinematics test for #{r.class} robot"
-  puts "target: [#{target[:x]},#{target[:z]}] angle #{target[:phi].to_deg} (deg)"
-  puts "\nsolution 1:", ik[0].map {|v| v.to_f.to_deg}.inspect
-  puts "\nsolution 2:", ik[1].map {|v| v.to_f.to_deg}.inspect
+  puts "target: [#{target[:x]},#{target[:y]},#{target[:z]}] angle #{target[:phi].to_deg} (deg)"
+  puts "\nsolution 1:", r.joints[0].map {|v| v.to_f.to_deg}.inspect
+  puts "\nsolution 2:", r.joints[1].map {|v| v.to_f.to_deg}.inspect
   puts "\nwrist coordinates:", r.wrist.inspect
 end
