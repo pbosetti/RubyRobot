@@ -23,7 +23,7 @@ class BoxBody
     @color = pars[:color] || [1,1,1,0.9]
   end
   
-  def draw
+  def draw(what)
     a2 = @a/2.0
     glColor(*@color)
     glRotate(@theta, 0.0, 0.0, 1.0)
@@ -31,10 +31,21 @@ class BoxBody
     glTranslate(a2, 0.0, 0.0)
     glPushMatrix()
       glScale(@a == 0.0 ? @w: @a, @w, @w)
-      glutWireCube(1.0)
+      if what[:wireframe]
+        glutWireCube(1.0)
+      else
+        glutSolidCube(1.0)
+      end
     glPopMatrix()
     glTranslate(a2, 0.0, 0.0)
     glRotate(@alpha, 1.0, 0.0, 0.0)
+    if what[:axes]
+      glColor(1,1,1,0.66)
+      glBegin(GL_LINES)
+        glVertex(0,0,-2*@w)
+        glVertex(0,0,2*@w)
+      glEnd()
+    end
   end
 end
 
@@ -59,7 +70,7 @@ class RobotViewer
     @y_incr = 0
     @scale_factor = 5.0
     @modifiers = 0
-    @draw = {:axes => true }
+    @draw = {:axes => true, :wireframe => true }
     
     @x_pan = 0.0
     @y_pan = 0.0
@@ -110,23 +121,7 @@ class RobotViewer
       glRotate(-90, 1,0,0)   # so to have Z axis pointing upward
       glPushMatrix()
       @bodies.each_with_index do |b,i|
-        b.draw
-        # if @draw[:lines]
-        #   if i < points.length - 1
-        #     glColor(1,1,1,1)
-        #     glBegin(GL_LINES)
-        #       glVertex(points[i])
-        #       glVertex(points[i+1])
-        #     glEnd()
-        #   end
-        # end
-        # if @draw[:points]
-        #   glPushMatrix()
-        #   glTranslate(*p) 
-        #   glColor(1,0,0,0.9)
-        #   glutSolidSphere(@point_size/@scale_factor, 16, 16)
-        #   glPopMatrix()
-        # end
+        b.draw(@draw)
       end
       glPopMatrix()
       if @draw[:axes]
@@ -190,18 +185,15 @@ class RobotViewer
       case key
       when ?a
         @draw[:axes] = !@draw[:axes]
-      when ?+
-        @point_size *= 2.0
-      when ?-
-        @point_size /= 2.0
       when ?\e
         exit(0)
+      when ?w
+        @draw[:wireframe] = !@draw[:wireframe]
       else
         puts <<-EOM
 Keystrokes:
   a           toggles axes visibility
-  +           increases points size
-  -           decreases points size
+  w           toggle wireframe
   Up/Down     rotate about Y (green)
   Left/Right  rotate about Z (blue)
   Home        reset rotation and scale
@@ -288,37 +280,9 @@ Keystrokes:
 end
 
 if __FILE__ == $0
-  # server = RobotViewer.new
-  # server_thread = Thread.new { server.run }
-  # DRb.start_service('druby://localhost:9000', server) 
-  # DRb.thread.join
-  # server_thread.kill
-  v = RobotViewer.new
-  v.bodies << BoxBody.new(
-    :l => 0, 
-    :a => 0, 
-    :w => 10, 
-    :theta => 30.0, 
-    :alpha => 90.0, 
-    :color => [1,1,1,0.9])
-  v.bodies << BoxBody.new(
-    :l => 0, 
-    :a => 50, 
-    :theta => 45.0, 
-    :alpha => 0.0,
-    :color => [1.0,0.8,0.8,0.9])
-  v.bodies << BoxBody.new(
-    :l => 0, 
-    :a =>40, 
-    :theta => -90.0, 
-    :alpha => 0.0, 
-    :color => [0.8,1.0,0.8,0.9])
-  v.bodies << BoxBody.new(
-    :l => 0, 
-    :a =>10,
-    :w => 2, 
-    :theta => -45.0, 
-    :alpha => 0.0, 
-    :color => [0.8,0.0,1.0,0.9])
-  v.run
+  server = RobotViewer.new
+  server_thread = Thread.new { server.run }
+  DRb.start_service('druby://localhost:9000', server) 
+  DRb.thread.join
+  server_thread.kill
 end
