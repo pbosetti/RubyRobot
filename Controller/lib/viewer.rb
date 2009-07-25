@@ -25,6 +25,13 @@ class BoxBody
   
   def draw(what)
     a2 = @a/2.0
+    if what[:axes]
+      glColor(1,1,1,0.66)
+      glBegin(GL_LINES)
+        glVertex(0,0,-2*@w)
+        glVertex(0,0,2*@w)
+      glEnd()
+    end
     glColor(*@color)
     glRotate(@theta, 0.0, 0.0, 1.0)
     glTranslate(0.0, 0.0, @l)
@@ -39,13 +46,6 @@ class BoxBody
     glPopMatrix()
     glTranslate(a2, 0.0, 0.0)
     glRotate(@alpha, 1.0, 0.0, 0.0)
-    if what[:axes]
-      glColor(1,1,1,0.66)
-      glBegin(GL_LINES)
-        glVertex(0,0,-2*@w)
-        glVertex(0,0,2*@w)
-      glEnd()
-    end
   end
 end
 
@@ -218,9 +218,9 @@ Keystrokes:
       when GLUT_KEY_RIGHT
         @y_rot += 10
       when GLUT_KEY_UP
-        @z_rot += 10
+        @scale_factor *= 1.1
       when GLUT_KEY_DOWN
-        @z_rot -= 10
+        @scale_factor /= 1.1
       end
     end
   end
