@@ -1,8 +1,8 @@
 # Created by Fabiano Giuliani on 2009-05-25.
 # Copyright (c) 2009 University of Trento. All rights reserved.
 
-require 'rubygems'
-require 'serialport'
+#require 'rubygems'
+#require 'serialport' Già richieste da rubitlash
 require 'rubitlash'
 
 module ARDUINO
@@ -10,13 +10,13 @@ module ARDUINO
 USBPORT  = "/dev/ttyUSB0"
 BAUDRATE = 9600
 
-SERVOS = {:base => 0, :shoulder => 1, :elbow => 2, :wrist=> 3}
+SERVOS = {:base => 0, :shoulder => 1, :elbow => 2, :wrist=> 3} # servo number
 
 class Controller < SerialPort	
 
 	def initialize(usbport = USBPORT, baudrate = BAUDRATE)
 		begin
-			super(usbport,baudrate)
+			super(usbport,baudrate,false)
 		rescue
 			raise "Arduino not connected"
 		end
@@ -24,7 +24,7 @@ class Controller < SerialPort
 end
 
 class ServoMotor
-	
+	attr_accessor :profiler
 	def initialize(controller = nil, position = :base ,theta = 0, config = {})
 		@controller = controller
 		@position   = position
@@ -35,7 +35,14 @@ class ServoMotor
 	end
 	
 	def write (value)
-		
+		if (@controller!=nil)
+			data = (?w * @number).chr
+			firstByte  = (value/127).to_i.chr
+			secondByte = (value%127).to_i.chr
+  			data.insert(1,firstByte)
+  			data.insert(2,secondByte)
+			@controller.write data
+		end
 	end
 	
 	def read()
@@ -131,4 +138,28 @@ private
 end
 
 end
+
+if ($0 == __FILE__) 
+	include ARDUINO
+	config = {
+	  :A => 50,
+	  :D => 60,
+	  :t_q => 0.01  
+	}
+
+	arduino_diecimila = Controller.new(usb="/dev/ttyUSB0", baud=9600)
+	servo1 = ServoMotor.new(arduino_diecimila, :base, 0, config)
+	
+	for t in 0...300
+		profile = servo1.profiler.velocity_profile(0, 30, 0, 90)
+		value = profile.call(t/100.0)*100
+
+		puts value
+
+		servo1.write value
+		sleep 0.01		
+	end
+	
+end
+
 
