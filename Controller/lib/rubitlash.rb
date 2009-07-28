@@ -32,8 +32,8 @@ class Bitlash
   end
   
   def open    
-    @port = SerialPort.new(@port_addr, 57600, 8, 1, SerialPort::NONE)
-    @port.expect(/>\s/)
+    @port = SerialPort.new(@port_addr, @baud, 8, 1, SerialPort::NONE)
+    #@port.expect(/>\s/)
   end
   
   def close; @port.close; end
