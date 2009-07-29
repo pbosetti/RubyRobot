@@ -34,6 +34,10 @@ class ServoMotor
 		self.write(theta)
 	end
 	
+	# il metodo write invia sulla porta seriale 3 byte
+	# 1° byte = codice ascii della lettera w moltiplicato per il servo da comandare
+	# 2° e 3° byte = valore dell'angolo in gradi moltiplicato per 100
+	#                con risoluzione alla seconda cifra decimale
 	def write (value)
 		if (@controller!=nil)
 			data = (?w * @number).chr
@@ -46,7 +50,15 @@ class ServoMotor
 	end
 	
 	def read()
-		
+		val = ""
+		if (@controller!=nil)
+			data = (?r * @number).chr
+			@controller.write data
+		end
+		while val==""
+			val = @controller.read
+			puts "Valore " + val if val!=""
+		end			
 	end
 
 	def inspect()
@@ -108,9 +120,11 @@ class Profiler
 			r = w_s * t + a * t**2 / 2
 		elsif t < dt_1+dt_m
 			r = (w_s + w_m) * dt_1 / 2 + w_m * (t - dt_1)
-		else
+		elsif t < dt_1+dt_m+dt_2
 			t_2 = dt_1 + dt_m
 			r = (w_s + w_m) * dt_1 / 2 + w_m*dt_m + w_m*(t-t_2) + d/2 * (t**2 + t_2**2) - d*t*t_2
+		else
+			r = 360.1
 		end
 		r
 	end
@@ -149,16 +163,23 @@ if ($0 == __FILE__)
 
 	arduino_diecimila = Controller.new(usb="/dev/ttyUSB0", baud=9600)
 	servo1 = ServoMotor.new(arduino_diecimila, :base, 0, config)
-	
-	for t in 0...300
-		profile = servo1.profiler.velocity_profile(0, 30, 0, 90)
-		value = profile.call(t/100.0)*100
+	servo1.inspect
 
+	time  = 0
+	dt    = 0.005
+	feed  = 90
+	theta = 180
+	profile = servo1.profiler.velocity_profile(0, feed, 0, theta)
+	value = profile.call(time)	
+	while value < 360
 		puts value
-
-		servo1.write value
-		sleep 0.01		
+		servo1.write value*100
+		sleep dt
+		time += dt
+		value = profile.call(time)
 	end
+	
+	#servo1.read
 	
 end
 

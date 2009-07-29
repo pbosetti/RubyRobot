@@ -38,10 +38,10 @@ void loop() {
              case 3: secondbyte = incoming;
                      if (writeServo) { 
                      value = map(firstbyte*127+secondbyte,0,18000,1000,2000);
-                     Serial.print("Value ");
-                     Serial.print(value,DEC);
-                     Serial.print(" write on servo number ");
-                     Serial.println(servoNumber,DEC);
+                     //Serial.print("Value ");
+                     //Serial.print(value,DEC);
+                     //Serial.print(" write on servo number ");
+                     //Serial.println(servoNumber,DEC);
                      Servos[servoNumber].writeMicroseconds(value);
                      writeServo = false; 
                      nbyte = 0;
@@ -51,9 +51,9 @@ void loop() {
              }
                      
          if (readServo) {
-           //Serial.print("Value ");
-           //value = Servos[servoNumber].read_us();
-           //Serial.print(value);
+           Serial.print("Value ");
+           value = Servos[servoNumber].readMicroseconds();
+           Serial.println(map(value,1000,2000,0,18000));
            //Serial.print(" read on servo number ");
            //Serial.println(servoNumber,DEC);
            readServo  = false;
