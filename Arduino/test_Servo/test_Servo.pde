@@ -2,20 +2,36 @@
 #define NBR_SERVOS 2  // the number of servos, up to 48 for Mega, 12 for other boards
 #define FIRST_SERVO_PIN 2
 
+#define FIRST_STEPPER_PIN 5
+#define FIRST_DIRSTEP_PIN 10
+#define NBR_STEPPER 1
+
 int incoming = 0;	// for incoming serial data
 int nbyte = 0;
 int servoNumber = 0;
 bool writeServo = false;
 bool readServo  = false;
+bool writeStepper = false;
 byte firstbyte;
 byte secondbyte;
 int value;
+
+// Stepper
+
+int dirpin[NBR_STEPPER];
+int steppin[NBR_STEPPER];
 
 MegaServo Servos[NBR_SERVOS];
 
 void setup() {
 	for( int i = 0; i < NBR_SERVOS; i++)
-          Servos[i].attach( FIRST_SERVO_PIN + i, 800, 2200);
+          Servos[i].attach( FIRST_SERVO_PIN + i,800,2200);
+        for( int i = 0; i < NBR_STEPPER; i++) {
+          dirpin[i]  = FIRST_DIRSTEP_PIN + i;
+          steppin[i] = FIRST_STEPPER_PIN + i;
+          pinMode(dirpin[i], OUTPUT);
+          pinMode(steppin[i], OUTPUT);          
+        }  
         Serial.begin(9600);	// opens serial port, sets data rate to 9600 bps
 }
 
@@ -36,8 +52,8 @@ void loop() {
                       }; break;                      
              case 2: firstbyte  = incoming; break;
              case 3: secondbyte = incoming;
-                     if (writeServo) { 
-                     value = map(firstbyte*127+secondbyte,0,18000,1000,2000);
+                     if (writeServo && servoNumber < NBR_SERVOS ) { 
+                     value = map(firstbyte*127+secondbyte,0,18000,800,2200);
                      //Serial.print("Value ");
                      //Serial.print(value,DEC);
                      //Serial.print(" write on servo number ");
@@ -46,6 +62,9 @@ void loop() {
                      writeServo = false; 
                      nbyte = 0;
                      value = 0;}
+                     else {
+                       // Sistemare la gestione dello stepper
+                     }
                      break;
              default: Serial.println("Too many char!");
              }

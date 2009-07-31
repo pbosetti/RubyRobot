@@ -1,9 +1,9 @@
 # Created by Fabiano Giuliani on 2009-05-25.
 # Copyright (c) 2009 University of Trento. All rights reserved.
 
-#require 'rubygems'
-#require 'serialport' Già richieste da rubitlash
-require 'rubitlash'
+require 'rubygems'
+require 'serialport'
+#require 'rubitlash'
 
 module ARDUINO
 
@@ -69,12 +69,9 @@ class ServoMotor
 		end
 	end	
 	
-	def create_profile(w_s, w_m, w_e, theta)
-		return @profiler.velocity_profile(w_s, w_m, w_e, theta)
-	end
 end
 
-class Profiler
+class ServoProfiler
 	
 	attr_reader :times, :feeds, :accel, :dt
     
@@ -128,8 +125,8 @@ class Profiler
 		end
 		r
 	end
-end
-    
+	end
+	
 private
     
 	def quantize(x, q, dir = :up)
@@ -148,39 +145,77 @@ private
 	end
 	r
     end
+	
+end
 
+class StepperMotor < ServoMotor
+	
+	# Invia un numero dispari per andare in senso orario
+	# pari per andare in senso antiorario
+	
+	def write(value)
+		if (@controller!=nil)
+			data = (?w * @number).chr
+			if value >=0
+				dir = 1
+			else
+				dir = 0
+			end
+			value = 2* (value.abs / @config[:theta_q]) + dir;
+			data.insert(1,(value/127).to_i.chr)
+			data.insert(2,(value%127).to_i.chr)
+			@controller.write data
+		end
+	end
+	
+	def read()
+	
+	end
 end
 
 end
 
 if ($0 == __FILE__) 
 	include ARDUINO
-	config = {
+	configServo = {
 	  :A => 50,
 	  :D => 60,
-	  :t_q => 0.01  
+	  :t_q => 0.005
+	}
+	
+	configStepper = {
+	  :A => 50,
+	  :D => 60,
+	  :t_q => 0.005,  
+	  :theta_q => 1.8
 	}
 
 	arduino_diecimila = Controller.new(usb="/dev/ttyUSB0", baud=9600)
-	servo1 = ServoMotor.new(arduino_diecimila, :base, 0, config)
+	servo1 = ServoMotor.new(arduino_diecimila, :base, 0, configServo)
+	servo2 = ServoMotor.new(arduino_diecimila, :shoulder, 0, configServo)
 	servo1.inspect
+	servo2.inspect
 
 	time  = 0
-	dt    = 0.005
-	feed  = 90
+	dt    = configServo[:t_q]
+	feed  = 60
 	theta = 180
 	profile = servo1.profiler.velocity_profile(0, feed, 0, theta)
 	value = profile.call(time)	
+	sleep 1
 	while value < 360
 		puts value
 		servo1.write value*100
+		servo2.write value*100
 		sleep dt
 		time += dt
 		value = profile.call(time)
 	end
 	
 	#servo1.read
-	
+	puts "--------------- Working done -----------------"
 end
+
+
 
 
