@@ -1,6 +1,8 @@
+#include <SLCD.h>
 #include <MegaServo.h>
+
 #define NBR_SERVOS 2  // the number of servos, up to 48 for Mega, 12 for other boards
-#define FIRST_SERVO_PIN 2
+#define FIRST_SERVO_PIN 3
 
 #define FIRST_STEPPER_PIN 5
 #define FIRST_DIRSTEP_PIN 10
@@ -15,6 +17,13 @@ bool writeStepper = false;
 byte firstbyte;
 byte secondbyte;
 int value;
+
+// LCD
+
+int numRows = 2;
+int numCols = 16;
+
+SLCD lcd = SLCD(numRows, numCols);
 
 // Stepper
 
@@ -33,6 +42,7 @@ void setup() {
           pinMode(steppin[i], OUTPUT);          
         }  
         Serial.begin(9600);	// opens serial port, sets data rate to 9600 bps
+     lcd.init();
 }
 
 void loop() {
@@ -65,6 +75,7 @@ void loop() {
                      else {
                        // Sistemare la gestione dello stepper
                      }
+                     //textWrite(0,3,"Servo moved",true);
                      break;
              default: Serial.println("Too many char!");
              }
@@ -81,3 +92,10 @@ void loop() {
          } 
   }      
 }
+
+void textWrite(int row, int col, char* text,bool clear) {
+  if (clear)
+  	lcd.clear();
+  lcd.print(text, row, col);
+}
+

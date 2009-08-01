@@ -30,7 +30,7 @@ class ServoMotor
 		@position   = position
 		@number     = SERVOS[@position]
 		@config		= config
-		@profiler	= Profiler.new(@config)
+		@profiler	= ServoProfiler.new(@config)
 		self.write(theta)
 	end
 	
