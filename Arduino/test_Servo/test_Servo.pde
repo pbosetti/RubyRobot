@@ -2,10 +2,10 @@
 #include <MegaServo.h>
 
 #define NBR_SERVOS 2  // the number of servos, up to 48 for Mega, 12 for other boards
-#define FIRST_SERVO_PIN 3
+#define FIRST_SERVO_PIN 2
 
 #define FIRST_STEPPER_PIN 5
-#define FIRST_DIRSTEP_PIN 10
+#define FIRST_DIRSTEP_PIN 6
 #define NBR_STEPPER 1
 
 int incoming = 0;	// for incoming serial data
@@ -17,6 +17,7 @@ bool writeStepper = false;
 byte firstbyte;
 byte secondbyte;
 int value;
+char str[16];
 
 // LCD
 
@@ -34,7 +35,7 @@ MegaServo Servos[NBR_SERVOS];
 
 void setup() {
 	for( int i = 0; i < NBR_SERVOS; i++)
-          Servos[i].attach( FIRST_SERVO_PIN + i,800,2200);
+          Servos[i].attach( FIRST_SERVO_PIN + i);
         for( int i = 0; i < NBR_STEPPER; i++) {
           dirpin[i]  = FIRST_DIRSTEP_PIN + i;
           steppin[i] = FIRST_STEPPER_PIN + i;
@@ -42,7 +43,13 @@ void setup() {
           pinMode(steppin[i], OUTPUT);          
         }  
         Serial.begin(9600);	// opens serial port, sets data rate to 9600 bps
-     lcd.init();
+        lcd.init();
+        lcd.clear();
+        lcd.print("J1:", 0, 0);
+        lcd.print("J2:", 0, 8);
+        lcd.print("J3:", 1, 0);
+        lcd.print("J4:", 1, 8);
+      
 }
 
 void loop() {
@@ -62,20 +69,20 @@ void loop() {
                       }; break;                      
              case 2: firstbyte  = incoming; break;
              case 3: secondbyte = incoming;
-                     if (writeServo && servoNumber < NBR_SERVOS ) { 
-                     value = map(firstbyte*127+secondbyte,0,18000,800,2200);
+                     if (writeServo ) { 
+                     value = map(firstbyte*127+secondbyte,0,18000,800,2000);
                      //Serial.print("Value ");
                      //Serial.print(value,DEC);
                      //Serial.print(" write on servo number ");
                      //Serial.println(servoNumber,DEC);
                      Servos[servoNumber].writeMicroseconds(value);
+                     //textWrite(servoNumber,0,"Servo  : ",true);
+                     //str = printf("%f.1",map(value,800,2000,0,180));
+                     //textWrite(servoNumber,6,str,true);
                      writeServo = false; 
                      nbyte = 0;
-                     value = 0;}
-                     else {
-                       // Sistemare la gestione dello stepper
+                     value = 0;
                      }
-                     //textWrite(0,3,"Servo moved",true);
                      break;
              default: Serial.println("Too many char!");
              }
@@ -91,11 +98,5 @@ void loop() {
            value = 0;
          } 
   }      
-}
-
-void textWrite(int row, int col, char* text,bool clear) {
-  if (clear)
-  	lcd.clear();
-  lcd.print(text, row, col);
 }
 

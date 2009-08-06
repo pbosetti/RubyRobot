@@ -180,7 +180,7 @@ if ($0 == __FILE__)
 	configServo = {
 	  :A => 50,
 	  :D => 60,
-	  :t_q => 0.005
+	  :t_q => 0.05
 	}
 	
 	configStepper = {
