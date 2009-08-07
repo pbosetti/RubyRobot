@@ -2,13 +2,15 @@
 #include <MegaServo.h>
 
 #define NBR_SERVOS 2  // the number of servos, up to 48 for Mega, 12 for other boards
-#define FIRST_SERVO_PIN 2
+#define FIRST_SERVO_PIN 30
 
 #define FIRST_STEPPER_PIN 5
 #define FIRST_DIRSTEP_PIN 6
 #define NBR_STEPPER 1
 
-int incoming = 0;	// for incoming serial data
+
+
+int incoming = 0;	// for incoming  data
 int nbyte = 0;
 int servoNumber = 0;
 bool writeServo = false;
@@ -17,7 +19,7 @@ bool writeStepper = false;
 byte firstbyte;
 byte secondbyte;
 int value;
-char str[16];
+char* str;
 
 // LCD
 
@@ -34,69 +36,75 @@ int steppin[NBR_STEPPER];
 MegaServo Servos[NBR_SERVOS];
 
 void setup() {
-	for( int i = 0; i < NBR_SERVOS; i++)
-          Servos[i].attach( FIRST_SERVO_PIN + i);
-        for( int i = 0; i < NBR_STEPPER; i++) {
-          dirpin[i]  = FIRST_DIRSTEP_PIN + i;
-          steppin[i] = FIRST_STEPPER_PIN + i;
-          pinMode(dirpin[i], OUTPUT);
-          pinMode(steppin[i], OUTPUT);          
-        }  
-        Serial.begin(9600);	// opens serial port, sets data rate to 9600 bps
-        lcd.init();
-        lcd.clear();
-        lcd.print("J1:", 0, 0);
-        lcd.print("J2:", 0, 8);
-        lcd.print("J3:", 1, 0);
-        lcd.print("J4:", 1, 8);
-      
+  for( int i = 0; i < NBR_SERVOS; i++)
+    Servos[i].attach( FIRST_SERVO_PIN + i);
+  for( int i = 0; i < NBR_STEPPER; i++) {
+    dirpin[i]  = FIRST_DIRSTEP_PIN + i;
+    steppin[i] = FIRST_STEPPER_PIN + i;
+    pinMode(dirpin[i], OUTPUT);
+    pinMode(steppin[i], OUTPUT);          
+  }  
+  .begin(9600);	// opens  port, sets data rate to 9600 bps
+  lcd.init();
+  lcd.clear();
+  lcd.print("J1:", 0, 0);
+  lcd.print("J3:", 0, 8);
+  lcd.print("J2:", 1, 0);
+  lcd.print("J4:", 1, 8);
+
 }
 
 void loop() {
 
-	if (Serial.available() > 0) {
-             incoming = Serial.read();
-             nbyte++;
-            
-             switch (nbyte) {
-             case 1:  if (incoming%119 == 0) {
-                          writeServo  = true;
-                          servoNumber = incoming / 119;
-                      }
-                      else {
-                          readServo   = true;
-                          servoNumber = incoming / 114;
-                      }; break;                      
-             case 2: firstbyte  = incoming; break;
-             case 3: secondbyte = incoming;
-                     if (writeServo ) { 
-                     value = map(firstbyte*127+secondbyte,0,18000,800,2000);
-                     //Serial.print("Value ");
-                     //Serial.print(value,DEC);
-                     //Serial.print(" write on servo number ");
-                     //Serial.println(servoNumber,DEC);
-                     Servos[servoNumber].writeMicroseconds(value);
-                     //textWrite(servoNumber,0,"Servo  : ",true);
-                     //str = printf("%f.1",map(value,800,2000,0,180));
-                     //textWrite(servoNumber,6,str,true);
-                     writeServo = false; 
-                     nbyte = 0;
-                     value = 0;
-                     }
-                     break;
-             default: Serial.println("Too many char!");
-             }
-                     
-         if (readServo) {
-           Serial.print("Value ");
-           value = Servos[servoNumber].readMicroseconds();
-           Serial.println(map(value,1000,2000,0,18000));
-           //Serial.print(" read on servo number ");
-           //Serial.println(servoNumber,DEC);
-           readServo  = false;
-           nbyte = 0;
-           value = 0;
-         } 
+  if (.available() > 0) {
+    incoming = .read();
+    nbyte++;
+
+    switch (nbyte) {
+    case 1:  
+      if (incoming%119 == 0) {
+        writeServo  = true;
+        servoNumber = incoming / 119;
+      }
+      else {
+        readServo   = true;
+        servoNumber = incoming / 114;
+      }; 
+      break;                      
+    case 2: 
+      firstbyte  = incoming; 
+      break;
+    case 3: 
+      secondbyte = incoming;
+      if (writeServo ) { 
+        value = map(firstbyte*127+secondbyte,0,18000,600,2400);
+        //.print("Value ");
+        //.print(value,DEC);
+        //.print(" write on servo number ");
+        //.println(servoNumber,DEC);
+        Servos[servoNumber].writeMicroseconds(value);
+        //textWrite(servoNumber,0,"Servo  : ",true);
+        //str = (char*)map(value,600,2400,0,180);
+        //lcd.print(str,1-servoNumber%2,4*(3*servoNumber/3));
+        writeServo = false; 
+        nbyte = 0;
+        value = 0;
+      }
+      break;
+    default: 
+      .println("Too many char!");
+    }
+
+    if (readServo) {
+      .print("Value ");
+      value = Servos[servoNumber].readMicroseconds();
+      Serial.println(map(value,1000,2000,0,18000));
+      //Serial.print(" read on servo number ");
+      //Serial.println(servoNumber,DEC);
+      readServo  = false;
+      nbyte = 0;
+      value = 0;
+    } 
   }      
 }
 
