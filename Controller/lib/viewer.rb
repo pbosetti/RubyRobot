@@ -25,14 +25,18 @@ class BoxBody
   
   def draw(what)
     a2 = @a/2.0
+    w2 = 2*@w
     if what[:axes]
       glColor(1,1,1,0.66)
       glBegin(GL_LINES)
-        glVertex(0,0,-2*@w)
-        glVertex(0,0,2*@w)
+        glVertex(0,0,-w2)
+        glVertex(0,0,w2)
       glEnd()
     end
     glColor(*@color)
+    # glPushMatrix()
+    #   glutSolidCone(@w,@w,10,1)
+    # glPopMatrix()
     glRotate(@theta, 0.0, 0.0, 1.0)
     glTranslate(0.0, 0.0, @l)
     glTranslate(a2, 0.0, 0.0)
