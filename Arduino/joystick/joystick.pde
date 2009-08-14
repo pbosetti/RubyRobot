@@ -4,6 +4,7 @@
 #define PIN_AXES 0
 #define BAUD 57600
 #define CAL_PIN 13
+#define MOVING_PIN 8
 #define DEAD 0.06
 #define EEPROM_START 70
 
@@ -52,8 +53,10 @@ int remap(int val, int min, int zero, int max, int d_min, int d_max) {
 
 void setup()
 {
-  for (int i = PIN_BUTT; i < PIN_BUTT + 4; i++)
-    pinMode(i, INPUT);
+  for (int i = 0; i < 4; i++) {
+    pinMode(i + PIN_BUTT, INPUT);
+    pinMode(i + MOVING_PIN, OUTPUT);
+  }
   Serial.begin(BAUD);
   for (int i = 0; i < 4; i++) {
     EEPROM_read(EEPROM_START + sizeof(unsigned int) * i, min[i]);
@@ -66,7 +69,8 @@ void loop()
 {
   static bool calibrated = true;
   short int buttons  = 0;
-
+  int v = 0;
+  
   for (int i = PIN_BUTT; i < PIN_BUTT + 4; i++) {
     buttons |= !digitalRead(i);
     buttons <<= 1;
@@ -98,15 +102,17 @@ void loop()
   Serial.print(" ");
   Serial.print(buttons);
   Serial.print(" ");
-  for (int i = PIN_AXES; i < PIN_AXES + 4; i++) {
-    Serial.print(remap(analogRead(i),min[i-PIN_AXES], zeros[i-PIN_AXES],max[i-PIN_AXES], -100, 100));
+  for (int i = 0; i < 4; i++) {
+    v = remap(analogRead(i + PIN_AXES),min[i], zeros[i],max[i], -100, 100);
+    digitalWrite(MOVING_PIN + i, v == 0 ? LOW : HIGH);
+    Serial.print(v);
     Serial.print(" ");
   }
   Serial.println("");
   if(buttons == 14) {
     calibrated = false;
     for (int i = 0; i < 4; i++) {
-      zeros[i] = analogRead(i);
+      zeros[i] = analogRead(i + PIN_AXES);
       min[i] = 1024;
       max[i] = 0;
     }
