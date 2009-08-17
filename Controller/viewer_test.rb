@@ -14,6 +14,7 @@ require "lib/viewer"
 end
 port_file = Dir.glob("/dev/tty.usbserial*")[0]
 sp = SerialPort.new(port_file, 57600, 8, 1, SerialPort::NONE)
+puts "Connected with #{port_file}"
 
 v = RobotViewer.new
 v.bodies << BoxBody.new(
