@@ -76,7 +76,7 @@ if ($0 == __FILE__)
   r.ik(target)
   puts "Inverse kinematics test for #{r.class} robot"
   puts "target: [#{target[:x]},#{target[:y]},#{target[:z]}] angle #{target[:phi].to_deg} (deg)"
-  puts "\nsolution 1:", r.joints[0].map {|v| v.to_f.to_deg}.inspect
-  puts "\nsolution 2:", r.joints[1].map {|v| v.to_f.to_deg}.inspect
+  puts "\nsolution 1:", r.joints[0].map {|v| v.to_deg}.inspect
+  puts "\nsolution 2:", r.joints[1].map {|v| v.to_deg}.inspect
   puts "\nwrist coordinates:", r.wrist.inspect
 end
