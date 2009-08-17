@@ -13,6 +13,7 @@ Contents
 * **Controller** contains Ruby code and libraries (in subdir Controller/lib).
 * **Support** contains documentation and support materials as Matlab scripts, Maple worksheets and so on.
 
-*More to come.*
+Example
+-------
 
-*Fabiano joined to the project*
+![Console prototype](http://cloud.github.com/downloads/pbosetti/RubyRobot/RubyRobot01.jpg "Console Prototype")
