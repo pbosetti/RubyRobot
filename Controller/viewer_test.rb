@@ -13,7 +13,8 @@ require "lib/ik"
     running = false
 	end
 end
-port_file = Dir.glob("/dev/tty.usbserial*")[0]
+#port_file = Dir.glob("/dev/tty.usbserial*")[0]
+port_file = "/dev/ttyUSB0"
 sp = SerialPort.new(port_file, 57600, 8, 1, SerialPort::NONE)
 puts "Connected with #{port_file}"
 

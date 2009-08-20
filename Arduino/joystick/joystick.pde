@@ -103,6 +103,8 @@ void loop()
         EEPROM_write(EEPROM_START + sizeof(unsigned int) * (4+i), zeros[i]);
         EEPROM_write(EEPROM_START + sizeof(unsigned int) * (8+i), max[i]);
       }
+      delay(2);
+      lcd.clear();
     }
   }
   else {
