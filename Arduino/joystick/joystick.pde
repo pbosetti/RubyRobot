@@ -1,3 +1,4 @@
+#include <SLCD.h>
 #include <EEPROM.h>
 
 #define PIN_BUTT 2
@@ -15,6 +16,12 @@ unsigned int max[] = {
 unsigned int zeros[] = {
   0, 0, 0, 0  };
 
+// LCD
+
+int numRows = 2;
+int numCols = 16;
+
+SLCD lcd = SLCD(numRows, numCols);
 
 template <class T> int EEPROM_write(int ee, const T& value)
 {
@@ -58,6 +65,7 @@ void setup()
     pinMode(i + MOVING_PIN, OUTPUT);
   }
   Serial.begin(BAUD);
+  lcd.init();
   for (int i = 0; i < 4; i++) {
     EEPROM_read(EEPROM_START + sizeof(unsigned int) * i, min[i]);
     EEPROM_read(EEPROM_START + sizeof(unsigned int) * (4+i), zeros[i]);
@@ -89,6 +97,7 @@ void loop()
     }
     if(buttons == 10) {
       calibrated = true;
+      lcd.print("ended", 1, 5);
       for (int i = 0; i < 4; i++) {
         EEPROM_write(EEPROM_START + sizeof(unsigned int) * i, min[i]);
         EEPROM_write(EEPROM_START + sizeof(unsigned int) * (4+i), zeros[i]);
@@ -116,6 +125,9 @@ void loop()
       min[i] = 1024;
       max[i] = 0;
     }
+   lcd.clear();
+   lcd.print("Calibration", 0, 2);
+   lcd.print("mode", 1, 6);
   }
   delay(20);  
 }
