@@ -23,9 +23,10 @@ config = {
   :l => [100.0,100.0, 10.0],
   :home => [  0.0,  0.0,  0.0],
   :limits => [
-    [0.0, 85.0.to_rad],
-    [-90.0.to_rad, 90.0.to_rad],
-    [-90.0.to_rad, 90.0.to_rad]
+    -90.0.to_rad..90.0.to_rad,
+    0.0..85.0.to_rad,
+    -90.0.to_rad..90.0.to_rad,
+    -90.0.to_rad..90.0.to_rad
   ]
 }
 r = Puma560.new(config)
@@ -75,7 +76,16 @@ while running do
     target[:y] += line[2]/100.0
     target[:z] += line[3]/100.0
     target[:phi] += line[4]/5000.0
-    r.ik(target)
+    begin
+    	r.ik(target)
+    rescue OutOfRange
+    	warn "Out of range!"
+        target[:x] += line[1]/100.0
+    	target[:y] -= line[2]/100.0
+    	target[:z] -= line[3]/100.0
+    	target[:phi] -= line[4]/5000.0
+    	r.ik(target)
+    end
     v.bodies.each_with_index do |b, i|
       b.theta = r.joints[1][i].to_deg
       if line[0] == 1 and ! rebound

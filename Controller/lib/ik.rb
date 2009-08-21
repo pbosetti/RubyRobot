@@ -12,6 +12,10 @@ end
 module RubyRobot
   include Math
   
+  class OutOfRange < Exception
+
+  end
+  
   class Robot
     attr_accessor :l, :home, :pose, :limits
     attr_accessor :joints
@@ -55,6 +59,11 @@ module RubyRobot
       @wrist = [@wrist[0]*cos(theta),@wrist[0]*sin(theta),@wrist[1]]
       @joints[0].insert 0, theta
       @joints[1].insert 0, theta
+      [0,1,2,3].each do |i|
+      #	warn "Out of range!" if !@limits[i].include? @joints[0][i]
+      #	warn "Out of range!" if !@limits[i].include? @joints[1][i]      	
+     raise OutOfRange, "Out of range!" if !@limits[i].include? @joints[1][i]      	
+      end
       @joints
     end
   end
