@@ -62,7 +62,7 @@ module RubyRobot
       [0,1,2,3].each do |i|
       #	warn "Out of range!" if !@limits[i].include? @joints[0][i]
       #	warn "Out of range!" if !@limits[i].include? @joints[1][i]      	
-     raise OutOfRange, "Out of range!" if !@limits[i].include? @joints[1][i]      	
+     raise OutOfRange if !@limits[i].include? @joints[1][i]      	
       end
       @joints
     end

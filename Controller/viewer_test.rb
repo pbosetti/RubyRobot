@@ -7,12 +7,17 @@ require "rubygems"
 require "serialport"
 require "lib/viewer"
 require "lib/ik"
+require "yaml"
 
 %w[ABRT HUP INT TERM].each do |s|
   Signal.trap(s) do
     running = false
 	end
 end
+
+crosspoints = Array.new(1,Hash.new)
+
+first_time_click = 0.0
 #port_file = Dir.glob("/dev/tty.usbserial*")[0]
 port_file = "/dev/ttyUSB0"
 sp = SerialPort.new(port_file, 57600, 8, 1, SerialPort::NONE)
@@ -91,6 +96,19 @@ while running do
       if line[0] == 1 and ! rebound
         print b.theta, " "
       end
+    end
+    if line[0] == 1 and ! rebound
+		if first_time_click == 0
+		    puts "------- Data capture begin --------"
+    		first_time_click = Time.now.to_f
+    		crosspoints[0] = {:time => 0}.merge(target)
+    	else
+    		crosspoints.push({:time => Time.now.to_f-first_time_click}.merge(target))
+    	end
+    end
+    if line[0] == 8
+	    File.open("crosspoints.yaml", "w") {|f| YAML.dump(crosspoints, f)}
+	    puts "------- Data capture end --------"
     end
     if line[0] == 1 and ! rebound
       puts
