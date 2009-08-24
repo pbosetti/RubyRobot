@@ -95,6 +95,15 @@ void loop()
       if(max[i] < val)
         max[i] = val;
     }
+    if (buttons == 1) {
+      lcd.print("Data capture",0,2);
+      lcd.print("begin",1,5);
+    }
+    if (buttons == 1) {
+      lcd.print("ended",1,5);
+      delay(1000);
+      lcd.clear();
+    } 
     if(buttons == 10) {
       calibrated = true;
       lcd.print("ended", 1, 5);

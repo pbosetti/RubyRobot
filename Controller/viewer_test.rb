@@ -20,7 +20,12 @@ crosspoints = Array.new(1,Hash.new)
 first_time_click = 0.0
 #port_file = Dir.glob("/dev/tty.usbserial*")[0]
 port_file = "/dev/ttyUSB0"
-sp = SerialPort.new(port_file, 57600, 8, 1, SerialPort::NONE)
+begin
+	sp = SerialPort.new(port_file, 57600, 8, 1, SerialPort::NONE)
+rescue
+	warn "No device connected"
+	exit(0)
+end	
 puts "Connected with #{port_file}"
 
 include RubyRobot
@@ -91,22 +96,23 @@ while running do
     	target[:phi] -= line[4]/5000.0
     	r.ik(target)
     end
-    v.bodies.each_with_index do |b, i|
-      b.theta = r.joints[1][i].to_deg
-      if line[0] == 1 and ! rebound
-        print b.theta, " "
-      end
-    end
-    if line[0] == 1 and ! rebound
+	if line[0] == 1 and ! rebound
 		if first_time_click == 0
 		    puts "------- Data capture begin --------"
     		first_time_click = Time.now.to_f
     		crosspoints[0] = {:time => 0}.merge(target)
     	else
-    		crosspoints.push({:time => Time.now.to_f-first_time_click}.merge(target))
+    		crosspoints << {:time => Time.now.to_f-first_time_click}.merge(target)
     	end
     end
-    if line[0] == 8
+    v.bodies.each_with_index do |b, i|
+      		b.theta = r.joints[1][i].to_deg
+    if line[0] == 1 and ! rebound
+        	print b.theta, " "
+    end
+    end
+    
+    if line[0] == 8 and ! rebound
 	    File.open("crosspoints.yaml", "w") {|f| YAML.dump(crosspoints, f)}
 	    puts "------- Data capture end --------"
     end

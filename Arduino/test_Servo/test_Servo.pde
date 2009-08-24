@@ -2,7 +2,7 @@
 #include <MegaServo.h>
 
 #define NBR_SERVOS 2  // the number of servos, up to 48 for Mega, 12 for other boards
-#define FIRST_SERVO_PIN 30
+#define FIRST_SERVO_PIN 22
 
 #define FIRST_STEPPER_PIN 5
 #define FIRST_DIRSTEP_PIN 6
