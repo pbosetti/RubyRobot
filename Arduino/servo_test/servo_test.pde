@@ -10,27 +10,37 @@
 
 #include <MegaServo.h>
 #include <MsTimer2.h>
+#include <SLCD.h>
+
+// LCD
+
+static int numRows = 2;
+static int numCols = 16;
+SLCD lcd = SLCD(numRows, numCols);
  
 // Serial data rate
 #define BAUD 9600
  
 // Constants
 unsigned int const PERIOD = 5; // Period in ms
-unsigned int const LOOP_DELAY = 100; // Main loop delay
+unsigned int const LOOP_DELAY = 20; // Main loop delay
 unsigned int const PIN_SERVO = 30;
-unsigned int const PIN_CAMERA = 13;
+unsigned int const PIN_POT = 7;
  
 MegaServo Servo;
  
 // Globals
 bool running = false;
+bool finished = false;
 unsigned long start;
 unsigned int iang = 20;
 unsigned int fang = 160;
 unsigned int ang  = 0;
+unsigned int potvalue;
 float time = 0;
 float t = 0;
 float m = 0;
+char str[5];
  
 // Functions
  
@@ -45,7 +55,6 @@ void pulse() {
   }
   else {
     toggle();
-    Serial.println("--END--");
     running = false;
   }
 }
@@ -54,12 +63,11 @@ void toggle() {
   if (running)
   {
     MsTimer2::stop();
-    digitalWrite(PIN_CAMERA, LOW);    
     running = false;
+    finished = true;    
   }
   else
   {
-    digitalWrite(PIN_CAMERA, HIGH);
     start = millis();
     MsTimer2::start();
     running = true;
@@ -80,18 +88,35 @@ void status()
 // SETUP AND LOOP
 void setup() {
   Serial.begin(BAUD);
+  lcd.init();
   Servo.attach(PIN_SERVO,800,2200);
-  pinMode(PIN_CAMERA, OUTPUT);  // collegamento alla smartcamera
   
   MsTimer2::set(PERIOD, pulse);
- 
-  Serial.println("Ready");
+  lcd.clear();
+  lcd.print("- Servo test -",0,1);
+  lcd.print("Value :",1,0);
+  lcd.print("deg",1,13);
 }
  
 void loop() {
   static unsigned int v = 0;
   char ch;
-  if (Serial.available()) {
+  potvalue = map(analogRead(PIN_POT),0,1023,0,3200);
+  if (running) {
+    Serial.print(t);
+    Serial.print(" ");    
+    Serial.print(ang);
+    Serial.print(" ");
+    Serial.println(potvalue);
+  } 
+  if (potvalue < 10)
+    sprintf(str,"00%i.%i",potvalue/10,potvalue%10);
+  else if (potvalue <100)
+    sprintf(str,"0%i.%i",potvalue/10,potvalue%10);
+  else
+      sprintf(str,"%i.%i",potvalue/10,potvalue%10);
+  lcd.print(str, 1, 7);
+  while (Serial.available()) {
     ch = Serial.read();
     // Serial command parsing:
     switch(ch) {
@@ -102,7 +127,7 @@ void loop() {
       status();
       break;
     case '0'...'9': // Accumulates values
-      v = v * 10 + ch - '0';
+      v = v * 10 + ch - '0';     
       break;
     case 'i':
       iang = v;

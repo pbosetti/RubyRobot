@@ -25,7 +25,7 @@ module RubyRobot
       @home =   cfg[:theta] 
       @limits = cfg[:limits]
       @pose =   {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0}  
-      @joints = Array.new(3,0.0)
+      @joints = [Array.new(3,0.0),Array.new(3,0.0)]
     end
   end
   
@@ -46,7 +46,7 @@ module RubyRobot
       sol[1][0] = atan2(@wrist[1], @wrist[0]) - atan2(-k2, k1)
       sol[0][2] = @pose[:phi] - (sol[0][0] + sol[0][1])
       sol[1][2] = @pose[:phi] - (sol[1][0] + sol[1][1])
-      @joints = sol
+      @joints = sol	
     end
   end
   
@@ -60,11 +60,8 @@ module RubyRobot
       @joints[0].insert 0, theta
       @joints[1].insert 0, theta
       [0,1,2,3].each do |i|
-      #	warn "Out of range!" if !@limits[i].include? @joints[0][i]
-      #	warn "Out of range!" if !@limits[i].include? @joints[1][i]      	
-     raise OutOfRange if !@limits[i].include? @joints[1][i]      	
+      		raise OutOfRange if !@limits[i].include? @joints[1][i]
       end
-      @joints
     end
   end
 end

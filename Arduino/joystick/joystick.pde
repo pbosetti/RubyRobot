@@ -99,7 +99,7 @@ void loop()
       lcd.print("Data capture",0,2);
       lcd.print("begin",1,5);
     }
-    if (buttons == 1) {
+    if (buttons == 8) {
       lcd.print("ended",1,5);
       delay(1000);
       lcd.clear();
