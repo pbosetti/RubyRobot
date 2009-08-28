@@ -44,7 +44,7 @@ void setup() {
     pinMode(dirpin[i], OUTPUT);
     pinMode(steppin[i], OUTPUT);          
   }  
-  .begin(9600);	// opens  port, sets data rate to 9600 bps
+  Serial.begin(57600);	// opens  port, sets data rate to 9600 bps
   lcd.init();
   lcd.clear();
   lcd.print("J1:", 0, 0);
@@ -56,8 +56,8 @@ void setup() {
 
 void loop() {
 
-  if (.available() > 0) {
-    incoming = .read();
+  if (Serial.available() > 0) {
+    incoming = Serial.read();
     nbyte++;
 
     switch (nbyte) {
@@ -92,11 +92,11 @@ void loop() {
       }
       break;
     default: 
-      .println("Too many char!");
+      Serial.println("Too many char!");
     }
 
     if (readServo) {
-      .print("Value ");
+      Serial.print("Value ");
       value = Servos[servoNumber].readMicroseconds();
       Serial.println(map(value,1000,2000,0,18000));
       //Serial.print(" read on servo number ");
