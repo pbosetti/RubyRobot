@@ -3,9 +3,9 @@
 #include <MegaServo.h>
 
 // -------- GENERAL PARAMETERS ---------
+#define PI 3.141592653589793;
 #define BAUD 57600
 #define EEPROM_START 70
-#define MANUAL_PIN 6
 
 // --------- SERVO PARAMETERS ----------
 #define NBR_SERVOS 4
@@ -34,14 +34,15 @@ unsigned int max[] = {
 unsigned int zeros[] = {
   0, 0, 0, 0  };
 
-boolean manual;
-boolean writeServo = false;
-boolean readServo  = false;
-int incoming = 0;
-int nbyte = 0;
-int servoNumber = 0;
-byte firstbyte;
-byte secondbyte;
+boolean manual = true;
+byte incoming;
+float coords[4] = {100.0, 100.0, -10.0, -0.5*PI};
+//float minlimits[4] = {-90.0/180*PI,0.0,-90.0/180*PI,-90.0/180*PI};
+float minlimits[4] = {-180.0/180*PI,-180.0/180*PI,-180.0/180*PI,-180.0/180*PI};
+//float maxlimits[4] = {90.0/180*PI,85.0/180*PI,90.0/180*PI,90.0/180*PI};
+float maxlimits[4] = {180.0/180*PI,180.0/180*PI,180.0/180*PI,180.0/180*PI};
+float joints[4] = {0.0, 0.0, 0.0, 0.0};
+float l[4]      = {0.0, 100.0, 100.0, 10.0};
 
 SLCD lcd = SLCD(numRows, numCols);
 MegaServo Servos[NBR_SERVOS];
@@ -96,22 +97,38 @@ void setup()
     EEPROM_read(EEPROM_START + sizeof(unsigned int) * (4+i), zeros[i]);
     EEPROM_read(EEPROM_START + sizeof(unsigned int) * (8+i), max[i]);
   }
-  pinMode(MANUAL_PIN, INPUT);
+  if (manual) {
+    lcd.clear();
+    lcd.print("Manual",0,5);
+    lcd.print("mode",1,6);
+  }
+  else {
+    lcd.clear();
+    lcd.print("Automatic",0,3);
+    lcd.print("mode",1,6);
+  }
 }
 
 void loop() 
 { 
-  if (manual != digitalRead(MANUAL_PIN) && manual == true) {
+  if (Serial.available() > 0) {
+    incoming = Serial.read();
+    switch (incoming) {
+      case 'A': manual = false; break;
+      case 'M': manual = true;  break;
+      default: ;
+    }
+  if (manual) {
     lcd.clear();
-    lcd.print("Manual",0,4);
-    lcd.print("mode",0,6);  
+    lcd.print("Manual",0,5);
+    lcd.print("mode",1,6);  
   }
-  if (manual != digitalRead(MANUAL_PIN) && manual == false) {
+  else {
     lcd.clear();
-    lcd.print("Automatic",0,2);
-    lcd.print("mode",0,6);  
+    lcd.print("Automatic",0,3);
+    lcd.print("mode",1,6);  
   }  
-  manual = digitalRead(MANUAL_PIN);
+  }
   if (manual) { // Manual mode
     static bool calibrated = true;
     short int buttons  = 0;
@@ -165,6 +182,11 @@ void loop()
       digitalWrite(MOVING_PIN + i, v == 0 ? LOW : HIGH);
       Serial.print(v);
       Serial.print(" ");
+      if (i==3)
+        coords[i] += v/5000.0; // phi angle
+      else  
+        coords[i] += v/100.0;  // xyz coords
+      
     }
     Serial.println("");
     if(buttons == 14) {
@@ -179,39 +201,24 @@ void loop()
      lcd.print("mode", 1, 6);
     }
     delay(20);
-  }
-  else { // Automatic mode
-    if (Serial.available() > 0) {
-      incoming = Serial.read();
-      nbyte++;
-
-      switch (nbyte) {
-      case 1:  
-        if (incoming%119 == 0) {
-          writeServo  = true;
-          servoNumber = incoming / 119;
-        }
-        else {
-          readServo   = true;
-          servoNumber = incoming / 114;
-        }; 
-        break;                      
-      case 2: 
-        firstbyte  = incoming; 
-        break;
-      case 3: 
-        secondbyte = incoming;
-        if (writeServo) { 
-          int value = map(firstbyte*127+secondbyte,0,18000,600,2400);
-          Servos[servoNumber].writeMicroseconds(value);
-          writeServo = false; 
-          nbyte = 0;
-          value = 0;
-        }
-        break;
-      default: 
-        Serial.println("Too many char!");
-      }
+    int i;
+  int length = 4;
+  char j[10];
+  int result = ik(coords, joints, l, minlimits, maxlimits, length);
+  if (result) {
+    for(i = 0; i < length; i++) {
+        Servos[i].write(joints[i]*180/PI);
     }
   }
+  else {
+    lcd.clear();
+    lcd.print("Out of range!",0,1);
+    delay(100);
+  }
+  delay(10);
+  }
+  else { // Automatic mode
+  }
+  
 }
+

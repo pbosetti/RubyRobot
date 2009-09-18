@@ -3,20 +3,19 @@
 
 require 'rubygems'
 require 'serialport'
-#require 'rubitlash'
 
 module ARDUINO
 
 USBPORT  = "/dev/ttyUSB0"
-BAUDRATE = 9600
+BAUDRATE = 57600
 
-SERVOS = {:base => 0, :shoulder => 1, :elbow => 2, :wrist=> 3} # servo number
+SERVOS = {:base => 1, :shoulder => 2, :elbow => 3, :wrist=> 4} # servo number
 
 class Controller < SerialPort	
 
 	def initialize(usbport = USBPORT, baudrate = BAUDRATE)
 		begin
-			super(usbport,baudrate,false)
+			super(usbport,baudrate, 8, 1, SerialPort::NONE)
 		rescue
 			raise "Arduino not connected"
 		end
@@ -30,7 +29,6 @@ class ServoMotor
 		@position   = position
 		@number     = SERVOS[@position]
 		@config		= config
-		@profiler	= ServoProfiler.new(@config)
 		self.write(theta)
 	end
 	
@@ -40,7 +38,7 @@ class ServoMotor
 	#                con risoluzione alla seconda cifra decimale
 	def write (value)
 		if (@controller!=nil)
-			data = (?w * @number).chr
+			data = (?> * @number).chr
 			firstByte  = (value/127).to_i.chr
 			secondByte = (value%127).to_i.chr
   			data.insert(1,firstByte)
@@ -52,7 +50,7 @@ class ServoMotor
 	def read()
 		val = ""
 		if (@controller!=nil)
-			data = (?r * @number).chr
+			data = (?< * @number).chr
 			@controller.write data
 		end
 		while val==""
@@ -69,108 +67,6 @@ class ServoMotor
 		end
 	end	
 	
-end
-
-class ServoProfiler
-	
-	attr_reader :times, :feeds, :accel, :dt
-    
-	def initialize(c={})
-      @cfg = c
-	end
-    
-	def velocity_profile(w_s, w_m, w_e, theta)
-		w_s = w_s.to_f
-		w_m = w_m.to_f
-		w_e = w_e.to_f
-		theta = theta.to_f
-
-		dt_1 = ((w_m - w_s) / @cfg[:A]).abs
-		dt_2 = ((w_m - w_e) / @cfg[:D]).abs
-		dt_m = theta / w_m - dt_1 * (w_m+w_s)/(2*w_m) - dt_2 * (w_m+w_e)/(2*w_m)
-      
-	if dt_m >= 0.0
-		q  = quantize(dt_1+dt_m+dt_2, @cfg[:t_q], :up)
-		dt_m += q[1]
-		w_m = (2*theta -w_s*dt_1 -w_e*dt_2)/(dt_1+dt_2+2*dt_m)
-		a   = (w_m - w_s) / dt_1
-		d   = (w_e - w_m) / dt_2
-	else
-		dt_1 = Math::sqrt(2*theta / (@cfg[:A] + @cfg[:A]**2 / @cfg[:D]))
-		dt_2 = dt_1 * @cfg[:A] / @cfg[:D]
-		q  = quantize(dt_1 + dt_2, @cfg[:t_q], :up)
-		dt_m = 0.0
-		dt_2 += q[1]
-		w_m = w_s + 2 * theta / (dt_1 + dt_2)
-		a = (w_m - w_s) / dt_1 
-		d = (w_e - w_m) / dt_2
-	end
-      
-	@times = [dt_1, dt_m, dt_2]
-	@feeds = [w_s, w_m, w_e]
-	@accel = [a, d]
-	@dt    = q[0]
-
-	proc do |t|
-		r = 0
-		if t < dt_1
-			r = w_s * t + a * t**2 / 2
-		elsif t < dt_1+dt_m
-			r = (w_s + w_m) * dt_1 / 2 + w_m * (t - dt_1)
-		elsif t < dt_1+dt_m+dt_2
-			t_2 = dt_1 + dt_m
-			r = (w_s + w_m) * dt_1 / 2 + w_m*dt_m + w_m*(t-t_2) + d/2 * (t**2 + t_2**2) - d*t*t_2
-		else
-			r = 360.1
-		end
-		r
-	end
-	end
-	
-private
-    
-	def quantize(x, q, dir = :up)
-		r = []
-		q = q.to_f
-		if (x % q) == 0.0
-			return [x, 0.0]
-		end
-      
-	if dir == :up
-		r[0] = ((x / q).to_i + 1) * q
-		r[1] = r[0] - x
-	else
-		r << ((x / q). to_i) * q
-		r << r[0] - x
-	end
-	r
-    end
-	
-end
-
-class StepperMotor < ServoMotor
-	
-	# Invia un numero dispari per andare in senso orario
-	# pari per andare in senso antiorario
-	
-	def write(value)
-		if (@controller!=nil)
-			data = (?w * @number).chr
-			if value >=0
-				dir = 1
-			else
-				dir = 0
-			end
-			value = 2* (value.abs / @config[:theta_q]) + dir;
-			data.insert(1,(value/127).to_i.chr)
-			data.insert(2,(value%127).to_i.chr)
-			@controller.write data
-		end
-	end
-	
-	def read()
-	
-	end
 end
 
 end

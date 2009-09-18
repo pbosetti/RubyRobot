@@ -1,3 +1,8 @@
+#!/usr/bin/env ruby
+#
+# Created by Paolo Bosetti on 2009-07-24.
+# Copyright (c) 2009 University of Trento. All rights 
+# reserved.
 require "rubygems"
 require "serialport"
 require "lib/viewer"
@@ -10,9 +15,6 @@ require "yaml"
 	end
 end
 
-# L'array crosspoints conterrà tutti i punti di passaggio 
-crosspoints = Array.new(1,Hash.new)
-first_time_click = 0.0
 #port_file = Dir.glob("/dev/tty.usbserial*")[0]
 
 begin
@@ -69,6 +71,15 @@ v.bodies << BoxBody.new(
   :color => [0.8,0.0,1.0,0.9])
 
 server_thread = Thread.new { v.run }
+
+crosspoints = Array.new(0,Hash.new)
+crossjoints = Array.new(0,Hash.new)
+
+if ARGV[0] == "-datacapture" # MANUAL MODE
+
+# L'array crosspoints e crossjoints conterranno tutti i punti di passaggio 
+first_time_click = 0.0
+
 running = true
 line = [0,0,0,0,0]
 now = last_click = Time.now.to_f
@@ -97,8 +108,10 @@ while running do
 		    puts "------- Data capture begin --------"
     		first_time_click = Time.now.to_f
     		crosspoints[0] = {:time => 0}.merge(target)
+    		crossjoints[0] = {:time => 0, :joints => r.joints[1]}
     	else
     		crosspoints << {:time => Time.now.to_f-first_time_click}.merge(target)
+    		crossjoints << {:time => Time.now.to_f-first_time_click, :joints => r.joints[1]}
     	end
     end
     v.bodies.each_with_index do |b, i|
@@ -110,7 +123,9 @@ while running do
     
     if line[0] == 8 and ! rebound
 	    File.open("crosspoints.yaml", "w") {|f| YAML.dump(crosspoints, f)}
+	    File.open("crossjoints.yaml", "w") {|f| YAML.dump(crossjoints, f)}
 	    puts "------- Data capture end --------"
+	    running = false
     end
     if line[0] == 1 or line [0] == 8 and ! rebound
       puts
@@ -122,3 +137,24 @@ while running do
   sleep 0.01
 end
 server_thread.join
+end
+
+sp.puts "A" # AUTOMATIC MODE
+
+while !running
+	running = true if gets
+end
+
+crosspoints = YAML.load_file("crosspoints.yaml")
+crossjoints = YAML::load_file("crossjoints.yaml")
+
+last_time = 0.0
+crossjoints.each do |cj|
+	v.bodies.each_with_index do |b, i|
+      		b.theta = cj[:joints][i].to_deg
+    end
+    sleep cj[:time]-last_time
+    last_time = cj[:time]
+end
+#server_thread.join
+
