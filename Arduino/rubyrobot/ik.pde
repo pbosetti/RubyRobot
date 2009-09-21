@@ -40,9 +40,9 @@ for (i=0; i<=1; i++)
       if (sol[i][j] < minlimits[j] || sol[i][j] > maxlimits[j])
         inrange *= 0;
 if (inrange) {
-  joints[0] = sol[1][0];
-  joints[1] = sol[1][1];
-  joints[2] = sol[1][2];
+  joints[0] = sol[0][0];
+  joints[1] = sol[0][1];
+  joints[2] = sol[0][2];
   joints[3] = sol[1][3];  
   return 1;
 } 

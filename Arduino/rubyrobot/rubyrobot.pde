@@ -36,11 +36,13 @@ unsigned int zeros[] = {
 
 boolean manual = true;
 byte incoming;
+float offset[4] = {0.5*PI, 0.5*PI, 0.5*PI, 0.5*PI};
+float increase[4] = {0.0, 0.0, 0.0, 0.0};
 float coords[4] = {100.0, 100.0, -10.0, -0.5*PI};
 //float minlimits[4] = {-90.0/180*PI,0.0,-90.0/180*PI,-90.0/180*PI};
-float minlimits[4] = {-180.0/180*PI,-180.0/180*PI,-180.0/180*PI,-180.0/180*PI};
+float minlimits[4] = {-180.0/180*PI,-90.0/180*PI,-180.0/180*PI,-180.0/180*PI};
 //float maxlimits[4] = {90.0/180*PI,85.0/180*PI,90.0/180*PI,90.0/180*PI};
-float maxlimits[4] = {180.0/180*PI,180.0/180*PI,180.0/180*PI,180.0/180*PI};
+float maxlimits[4] = {180.0/180*PI,90.0/180*PI,180.0/180*PI,180.0/180*PI};
 float joints[4] = {0.0, 0.0, 0.0, 0.0};
 float l[4]      = {0.0, 100.0, 100.0, 10.0};
 
@@ -183,10 +185,10 @@ void loop()
       Serial.print(v);
       Serial.print(" ");
       if (i==3)
-        coords[i] += v/5000.0; // phi angle
+        increase[i] = v/5000.0; // phi angle
       else  
-        coords[i] += v/100.0;  // xyz coords
-      
+        increase[i] = v/100.0;  // xyz coords
+      coords[i] += increase[i];      
     }
     Serial.println("");
     if(buttons == 14) {
@@ -207,12 +209,14 @@ void loop()
   int result = ik(coords, joints, l, minlimits, maxlimits, length);
   if (result) {
     for(i = 0; i < length; i++) {
-        Servos[i].write(joints[i]*180/PI);
+        Servos[i].write((joints[i]+offset[i])*180/PI);
     }
   }
   else {
     lcd.clear();
     lcd.print("Out of range!",0,1);
+    for (i = 0; i < length; i++)
+      coords[i] -= increase[i];
     delay(100);
   }
   delay(10);

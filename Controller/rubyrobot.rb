@@ -136,7 +136,7 @@ while running do
   end
   sleep 0.01
 end
-server_thread.join
+#server_thread.join
 end
 
 sp.puts "A" # AUTOMATIC MODE
@@ -156,5 +156,5 @@ crossjoints.each do |cj|
     sleep cj[:time]-last_time
     last_time = cj[:time]
 end
-#server_thread.join
-
+server_thread.join
+server_thread.exit
