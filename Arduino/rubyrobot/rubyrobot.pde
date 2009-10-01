@@ -1,32 +1,14 @@
 #include <SLCD.h>
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
-=======
-#include <EEPROM.h>
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
 #include <MegaServo.h>
 
 // -------- GENERAL PARAMETERS ---------
 #define PI 3.141592653589793;
 #define BAUD 57600
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
-=======
-#define EEPROM_START 70
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
 
 // --------- SERVO PARAMETERS ----------
 #define NBR_SERVOS 4
 #define FIRST_SERVO_PIN 50
 
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
-=======
-//-------- JOYSTICK PARAMETERS ---------
-#define PIN_BUTT 2
-#define PIN_AXES 0
-#define CAL_PIN 13
-#define MOVING_PIN 8
-#define DEAD 0.06
-
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
 //------ POTENTIOMETER PARAMETERS ------
 #define POT_PIN 8
 
@@ -58,7 +40,6 @@ float l[4]      = {0.0, 100.0, 100.0, 10.0};
 SLCD lcd = SLCD(numRows, numCols);
 MegaServo Servos[NBR_SERVOS];
 
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
 void setup()
 {
   setJoystickPins();
@@ -67,58 +48,6 @@ void setup()
   Serial.begin(BAUD);
   lcd.init();
   readEEPROM(min,max,zeros);
-=======
-template <class T> int EEPROM_write(int ee, const T& value)
-{
-  byte const *p = reinterpret_cast<byte const *>(&value);
-  int i;
-  for (i = 0; i < sizeof(value); i++)
-    EEPROM.write(ee++, *p++);
-  return i;
-}
-
-template <class T> int EEPROM_read(int ee, T& value)
-{
-  byte *p = reinterpret_cast<byte *>(&value);
-  int i;
-  for (i = 0; i < sizeof(value); i++)
-    *p++ = EEPROM.read(ee++);
-  return i;
-}
-
-int remap(int val, int min, int zero, int max, int d_min, int d_max) {
-  int result = 0;
-  int dead_min = (int)(zero * (1.0 - DEAD));
-  int dead_max = (int)(zero * (1.0 + DEAD));
-  int middle = (d_max + d_min) / 2;
-  if (val < dead_min) {
-    result = map(val, min, dead_min, d_min, middle);
-  }
-  else if (val > dead_max) {
-    result = map(val, dead_max, max, middle, d_max);
-  }
-  else {
-    result = middle;
-  }  
-  return result;
-}
-
-void setup()
-{
-  for (int i = 0; i < 4; i++) {
-    pinMode(i + PIN_BUTT, INPUT);
-    pinMode(i + MOVING_PIN, OUTPUT);
-  }
-  for( int i = 0; i < NBR_SERVOS; i++)
-    Servos[i].attach( FIRST_SERVO_PIN + i);
-  Serial.begin(BAUD);
-  lcd.init();
-  for (int i = 0; i < 4; i++) {
-    EEPROM_read(EEPROM_START + sizeof(unsigned int) * i, min[i]);
-    EEPROM_read(EEPROM_START + sizeof(unsigned int) * (4+i), zeros[i]);
-    EEPROM_read(EEPROM_START + sizeof(unsigned int) * (8+i), max[i]);
-  }
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
   if (manual) {
     lcd.clear();
     lcd.print("Manual",0,5);
@@ -133,10 +62,7 @@ void setup()
 
 void loop() 
 { 
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
   short int buttons  = 0;
-=======
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
   if (Serial.available() > 0) {
     incoming = Serial.read();
     switch (incoming) {
@@ -157,7 +83,6 @@ void loop()
   }
   if (manual) { // Manual mode
     static bool calibrated = true;
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
     int v = 0;  
     readJoystickButtons(buttons);
     if(!calibrated) {
@@ -165,21 +90,6 @@ void loop()
       unsigned int val = 0;
       for (int i; i < 4; i++) {
         val = readJoystickAxis(i);
-=======
-    short int buttons  = 0;
-    int v = 0;  
-    for (int i = PIN_BUTT; i < PIN_BUTT + 4; i++) {
-      buttons |= !digitalRead(i);
-      buttons <<= 1;
-    }
-    buttons >>= 1;
-
-    if(!calibrated) {
-      digitalWrite(CAL_PIN, HIGH);
-      unsigned int val = 0;
-      for (int i; i < 4; i++) {
-        val = analogRead(i+PIN_AXES);
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
         if(min[i] > val)
           min[i] = val;
         if(max[i] < val)
@@ -198,36 +108,19 @@ void loop()
       if(buttons == 10) {
         calibrated = true;
         lcd.print("ended", 1, 5);
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
         writeEEPROM (min,max,zeros);
-=======
-        for (int i = 0; i < 4; i++) {
-          EEPROM_write(EEPROM_START + sizeof(unsigned int) * i, min[i]);
-          EEPROM_write(EEPROM_START + sizeof(unsigned int) * (4+i), zeros[i]);
-          EEPROM_write(EEPROM_START + sizeof(unsigned int) * (8+i), max[i]);
-        }
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
         delay(1000);
         lcd.clear();
       }
     }
     else {
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
       calibrationLED(LOW);
-=======
-      digitalWrite(CAL_PIN, LOW);
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
     }
     Serial.print(" ");
     Serial.print(buttons);
     Serial.print(" ");
     for (int i = 0; i < 4; i++) {
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
       v= axisValue(i);
-=======
-      v = remap(analogRead(i + PIN_AXES),min[i], zeros[i],max[i], -100, 100);
-      digitalWrite(MOVING_PIN + i, v == 0 ? LOW : HIGH);
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
       Serial.print(v);
       Serial.print(" ");
       if (i==3)
@@ -240,11 +133,7 @@ void loop()
     if(buttons == 14) {
       calibrated = false;
       for (int i = 0; i < 4; i++) {
-<<<<<<< HEAD:Arduino/rubyrobot/rubyrobot.pde
         zeros[i] = readJoystickAxis(i);
-=======
-        zeros[i] = analogRead(i + PIN_AXES);
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Arduino/rubyrobot/rubyrobot.pde
         min[i] = 1024;
         max[i] = 0;
       }

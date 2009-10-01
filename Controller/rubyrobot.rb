@@ -129,33 +129,19 @@ while running do
       last_click = Time.now.to_f
     end
   rescue
-<<<<<<< HEAD:Controller/rubyrobot.rb
     puts "Error: #{$!} #{line.inspect}"
-=======
-    #puts "Error: #{$!} #{line.inspect}"
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Controller/rubyrobot.rb
   end
   sleep 0.01
 end
 #server_thread.join
-<<<<<<< HEAD:Controller/rubyrobot.rb
 sleep 0.5
-=======
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Controller/rubyrobot.rb
 puts "Do you want to continue in automatic mode? <yes/no> :"
 continue = gets
 end
 
 if continue == "yes" || continue == "y" || continue == ""
 sp.puts "A" # AUTOMATIC MODE
-<<<<<<< HEAD:Controller/rubyrobot.rb
 puts "Automatic mode"
-=======
-
-while !running
-	running = true if gets
-end
->>>>>>> 12d6fd0045be5ce94e14c98b5e778382537e0279:Controller/rubyrobot.rb
 
 crosspoints = YAML.load_file("crosspoints.yaml")
 crossjoints = YAML::load_file("crossjoints.yaml")
