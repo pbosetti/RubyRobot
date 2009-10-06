@@ -1,13 +1,12 @@
 #!/usr/bin/env ruby
-#
-# Created by Paolo Bosetti on 2009-07-24.
-# Copyright (c) 2009 University of Trento. All rights 
-# reserved.
+
 require "rubygems"
 require "serialport"
 require "lib/viewer"
 require "lib/ik"
 require "yaml"
+require "lib/coordinatesystem"
+require "lib/help"
 
 %w[ABRT HUP INT TERM].each do |s|
   Signal.trap(s) do
@@ -15,9 +14,15 @@ require "yaml"
 	end
 end
 
-#port_file = Dir.glob("/dev/tty.usbserial*")[0]
+help = Help.new
+
+if ARGV.include? "--help"
+	help.general_help
+	exit(0)	
+end
 
 begin
+	#port_file = Dir.glob("/dev/tty.usbserial*")[0]
 	port_file = "/dev/ttyUSB0"
 	sp = SerialPort.new(port_file, 57600, 8, 1, SerialPort::NONE)
 rescue
@@ -75,13 +80,30 @@ server_thread = Thread.new { v.run }
 crosspoints = Array.new(0,Hash.new)
 crossjoints = Array.new(0,Hash.new)
 continue    = ""
+if ARGV.include? "-circle"
+print "raggio ="
+r = gets.to_f
+print "omega ="
+omega = gets.to_f
+print "T ="
+period = gets.to_f
+t = 0
+puts "Do you want to change the Coordinate System? <y/n> "
+resp = gets
+if resp == "y"
+	
+else
 
-if ARGV[0] == "-datacapture" # MANUAL MODE
+end
+circle = Circle.new
+circle_path = circle.create(Point.new([1.0,3.0,-2.0]),omega, r, 0.0, rtm)
 
-# L'array crosspoints e crossjoints conterranno tutti i punti di passaggio 
+end
+if ARGV.include? "-datacapture" # MANUAL MODE
 first_time_click = 0.0
-
 running = true
+changeCS = false
+p = Array.new(1)
 line = [0,0,0,0,0]
 now = last_click = Time.now.to_f
 
@@ -90,6 +112,7 @@ while running do
   line = line.map {|e| e.to_i}
   rebound = (Time.now.to_f - last_click < 1)
   begin
+  	if line
   	target[:x] -= line[1]/100.0
   	target[:y] += line[2]/100.0
    	target[:z] += line[3]/100.0
@@ -100,15 +123,33 @@ while running do
    		target[:z] -= line[3]/100.0
 		target[:phi] -= line[4]/5000.0
 	end
+	end
 	if line[0] == 1 and ! rebound
-		if first_time_click == 0
-		    puts "------- Data capture begin --------"
-    		first_time_click = Time.now.to_f
-    		crosspoints[0] = {:time => 0}.merge(target)
-    		crossjoints[0] = {:time => 0, :joints => r.joints}
-    	else
+		if changeCS
+			include CoordinateSystem
+			if first_time_click == 0
+				first_time_click = Time.now.to_f								
+				p[0] = Point.new([target[:x],target[:y],target[:z]])
+			else
+				p.push Point.new([target[:x],target[:y],target[:z]])
+				last_click = Time.now.to_f
+				if p.length == 3
+				# cs.rtm is the Roto-Traslation matrix of this Coordinate System
+					cs = CartesianAxis.new(p[0],p[1],p[2])
+					puts cs.rtm.inspect
+					changeCS = false
+				end	
+			end			
+		else
+			if first_time_click == 0
+				puts "------- Data capture begin --------"
+   		 		first_time_click = Time.now.to_f
+   	 			crosspoints[0] = {:time => 0}.merge(target)
+   	 			crossjoints[0] = {:time => 0, :joints => r.joints}
+    		else
     			crosspoints << {:time => Time.now.to_f-first_time_click}.merge(target)
-    		crossjoints << {:time => Time.now.to_f-first_time_click, :joints => r.joints}
+    			crossjoints << {:time => Time.now.to_f-first_time_click, :joints => r.joints}
+    		end
     	end
     end
     v.bodies.each_with_index do |b, i|
@@ -128,6 +169,11 @@ while running do
       puts
       last_click = Time.now.to_f
     end
+# ------- Change coordinate system --------
+	if line[0] == 6 and !rebound
+		changeCS = true
+	end    
+    
   rescue
     puts "Error: #{$!} #{line.inspect}"
   end

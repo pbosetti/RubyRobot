@@ -84,7 +84,7 @@ void loop()
   if (manual) { // Manual mode
     static bool calibrated = true;
     int v = 0;  
-    readJoystickButtons(buttons);
+    buttons = readJoystickButtons(buttons);
     if(!calibrated) {
       calibrationLED(HIGH);
       unsigned int val = 0;

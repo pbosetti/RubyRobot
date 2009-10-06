@@ -74,6 +74,7 @@ int readJoystickButtons(short int buttons) {
       buttons <<= 1;
     }
   buttons >>= 1;
+  return buttons;
 }
 
 unsigned int readJoystickAxis(int number) {
