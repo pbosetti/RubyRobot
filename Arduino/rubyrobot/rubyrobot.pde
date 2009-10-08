@@ -26,6 +26,10 @@ unsigned int zeros[] = {
   0, 0, 0, 0  };
 
 boolean manual = true;
+boolean servo  = false;
+int nbyte = 0;
+int length = 4;
+
 byte incoming;
 float offset[4] = {0.5*PI, 0.5*PI, 0.5*PI, 0.5*PI};
 float increase[4] = {0.0, 0.0, 0.0, 0.0};
@@ -143,7 +147,6 @@ void loop()
     }
     delay(20);
     int i;
-  int length = 4;
   char j[10];
   int result = ik(coords, joints, l, minlimits, maxlimits, length);
   if (result) {
@@ -161,6 +164,25 @@ void loop()
   delay(10);
   }
   else { // Automatic mode
+    if (Serial.available() > 0) {
+      incoming = Serial.read();
+      if (incoming == 'S')
+        servo = true;
+      if (servo) {
+        nbyte++;
+        switch (nbyte%2) {
+          case 1: joints[nbyte/2] = incoming*256; break;
+          case 2: joints[nbyte/2] += incoming; break;
+        }
+        if (nbyte == 8) {
+          servo = false;
+          nbyte = 0;
+          for(int i = 0; i < length; i++) {
+              Servos[i].write((joints[i]+offset[i])*180/PI);
+          }          
+        }
+      }
+    }
   }
   
 }

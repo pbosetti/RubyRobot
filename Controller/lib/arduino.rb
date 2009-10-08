@@ -18,15 +18,7 @@ SERVOS = {:base => 1, :shoulder => 2, :elbow => 3, :wrist=> 4} # servo number
 class Controller < SerialPort	
 
 	def initialize(usbport = USBPORT, baudrate = BAUDRATE)
-		begin
-			#port_file = Dir.glob("/dev/tty.usbserial*")[0]
-			port_file = "/dev/ttyUSB0"
-			super(port_file, 57600, 8, 1, SerialPort::NONE)
-		rescue
-			warn "ERROR: No device connected."
-			exit(0)
-		end	
-		puts "Connected with #{port_file}"
+		super(usbport, baudrate, 8, 1, SerialPort::NONE)
 	end
 	
 	def update_sim(v,r)
@@ -35,7 +27,8 @@ class Controller < SerialPort
 		end
 	end
 	
-	def data_capture(r,target,v)
+	def data_capture(r,target,v,filename)
+		self.puts "M"
 		first_time_click = 0.0
 		running = true
 		p = Array.new(1)
@@ -44,7 +37,7 @@ class Controller < SerialPort
 		crosspoints = Array.new(0,Hash.new)
 		crossjoints = Array.new(0,Hash.new)
 		while running do
-		  line = sp.gets.split
+		  line = self.gets.split
 		  line = line.map {|e| e.to_i}
 		  rebound = (Time.now.to_f - last_click < 1)
 		  begin
@@ -59,9 +52,8 @@ class Controller < SerialPort
 				target[:phi] -= line[4]/5000.0
 			end
 			if line[0] == 1 and ! rebound
-				print r.joints, " "
 				if first_time_click == 0
-					puts "------- Data capture begin --------"
+					STDOUT.puts "------- Data capture begin --------"
 		   			first_time_click = Time.now.to_f
 		   	 		crosspoints[0] = {:time => 0}.merge(target)
 		   	 		crossjoints[0] = {:time => 0, :joints => r.joints}
@@ -69,57 +61,58 @@ class Controller < SerialPort
 					crosspoints << {:time => Time.now.to_f-first_time_click}.merge(target)
 					crossjoints << {:time => Time.now.to_f-first_time_click, :joints => r.joints}
 				end
+				STDOUT.print r.joints, " "
 			end			
 			update_sim(v,r)	
 			
 			if line[0] == 8 and ! rebound
-				File.open("crosspoints.yaml", "w") {|f| YAML.dump(crosspoints, f)}
-				puts "------- Data capture end --------"
+				File.open(filename, "w") {|f| YAML.dump(crosspoints, f)}
+				STDOUT.puts "------- Data capture end --------"
 				running = false
 			end
 			if line[0] == 1 or line [0] == 8 and ! rebound
-			  puts
+			  STDOUT.puts
 			  last_click = Time.now.to_f
-			end
-		# ------- Change coordinate system --------
-			if line[0] == 6 and !rebound
-				changeCS = true
-			end    
-		
+			end		
 		  rescue
-			puts "Error: #{$!} #{line.inspect}"
+			STDOUT.puts "Error: #{$!} #{line.inspect}"
 		  end
 		end
 	end
 	
 	def get_rtm (r,target,v)
+		self.puts "M"
 		first_time_click = 0.0
 		running = true
 		line = [0,0,0,0,0]
 		now = last_click = Time.now.to_f
-		p = Array.new(1)
+		p = Array.new(0)
 		while running
 			line = self.gets.split
 			line = line.map {|e| e.to_i}
 			rebound = (Time.now.to_f - last_click < 1)
-			target[:x] -= line[1]/100.0
-		  	target[:y] += line[2]/100.0
-		   	target[:z] += line[3]/100.0
-			target[:phi] += line[4]/5000.0
-			if !r.ik(target)
-				target[:x] += line[1]/100.0
-		  		target[:y] -= line[2]/100.0
-		   		target[:z] -= line[3]/100.0
-				target[:phi] -= line[4]/5000.0
+			if line
+				target[:x] -= line[1]/100.0
+			  	target[:y] += line[2]/100.0
+			   	target[:z] += line[3]/100.0
+				target[:phi] += line[4]/5000.0
+				if !r.ik(target)
+					target[:x] += line[1]/100.0
+			  		target[:y] -= line[2]/100.0
+			   		target[:z] -= line[3]/100.0
+					target[:phi] -= line[4]/5000.0
+				end
 			end
 			if line[0] == 1 and ! rebound
-				print "Point n°"
-				print p.length
-				print ": "
-				print r.joints, " "
-				if first_time_click == 0
+				STDOUT.print "Point n°"
+				STDOUT.print p.length+1
+				STDOUT.print ": "
+				STDOUT.print r.joints, " "
+				STDOUT.puts
+				if first_time_click == 0.0
 					first_time_click =Time.now.to_f
 					p[0] = Point.new([target[:x],target[:y],target[:z]])
+					last_click = Time.now.to_f
 				else
 					p.push Point.new([target[:x],target[:y],target[:z]])
 					last_click = Time.now.to_f
@@ -127,7 +120,6 @@ class Controller < SerialPort
 					# cs.rtm is the Roto-Traslation matrix of this Coordinate System
 						cs = CartesianAxis.new(p[0],p[1],p[2])
 						rtm = cs.rtm
-						changeCS = false
 						running = false
 					end	
 				end	

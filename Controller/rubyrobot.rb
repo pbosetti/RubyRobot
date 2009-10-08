@@ -26,7 +26,47 @@ end
 include Arduino
 include InverseKinematics
 
-arduino = Controller.new("/dev/ttyUSB0",57600)
+begin
+	baudrate = 57600
+	usbport  = "/dev/ttyUSB0"
+	arduino  = Controller.new(usbport,baudrate)
+rescue
+	warn "ERROR: No device connected."
+	exit(0)
+end
+puts "Connected with #{usbport} @#{baudrate} bps"
+
+basicShape = {:circle => "-circle", :conical_spiral => "-conicalspiral",
+			  :cilindrical_spiral => "-cilindricalspiral",
+			  :spiral => "-spiral"}
+
+STDOUT.sync = true
+
+# Parsing the ARGV array
+
+shape = nil
+datacapture = false
+filename = ""
+basicShape.each do |key,val|
+	if ARGV.include? val
+		if shape == nil
+			shape = key
+		else
+			puts "ERROR: Too many information. Select #{basicShape[shape]} or #{basicShape[key]}"
+			exit(0)
+		end
+	end	
+end
+
+if !shape and ARGV.include? "-datacapture"
+	datacapture = true
+end
+
+ARGV.each do |v|
+	filename = v if v.include? ".yaml"
+end	
+
+# End parsing
 
 config = {
   :l => [0.0, 100.0,100.0, 10.0],
@@ -73,10 +113,12 @@ v.bodies << BoxBody.new(
 
 server_thread = Thread.new { v.run }
 
-if ARGV.include? "-circle"
+if shape != nil
 t = 0
+resp = ""
 print "Do you want to change the Coordinate System? <y/n>: "
 resp = STDIN.gets.chomp
+puts
 if resp == "y"
 	changeCS = true
 	rtm = arduino.get_rtm(r,target,v)
@@ -84,36 +126,53 @@ else
 	changeCS = false
 	rtm = Matrix.identity(4)
 end
-	
+	resp = ""
 end
 
-if ARGV.include? "-datacapture"
-	arduino.datacapture(r,target,v)
-end
-
-if ARGV.include? "-circle"
+if datacapture
+	arduino.data_capture(r,target,v,filename)
+	print "Do you want to do the selected path? <y/n>: "
+	resp = STDIN.gets.chomp
+elsif shape != nil
 	include BasicShape
 	puts "Creating path..."
-	param = YAML::load_file("parameters.yaml")[:circle]
-	circle = Circle.new
-	circle_path = circle.create(param.merge({:rtm => rtm}))
+	param = YAML::load_file("parameters.yaml")[shape]
+	case shape
+		when :circle
+			sh = Circle.new
+		when :conical_spiral
+			sh = ConicalSpiral.new
+		when :cilindrical_spiral
+			sh = CilindricalSpiral.new
+		when :spiral
+			sh = Spiral.new
+	end
+	path = sh.create(param.merge({:rtm => rtm}))
 	t  = 0.0
 	dt = 0.05
 	T  = 5.0
 	points = Array.new()
 	crosspoints = Array.new(0,Hash.new)
 	while t <= T
-		points << circle_path.call(t)	
+		points << path.call(t)	
 		crosspoints << {:x => points.last[0],:y => points.last[1],
 						:z => points.last[2],:phi => -1.57, :time => t}
 		t += dt
-		File.open("crosspoints.yaml", "w") {|f| YAML.dump(crosspoints, f)}
+		filename = "crosspoints.yaml" if filename == ""
+		File.open(filename, "w") {|f| YAML.dump(crosspoints, f)}
 	end
+	puts "... finish"
+	print "Do you want to do the selected path? <y/n>: "
+	resp = STDIN.gets.chomp
 end
 
-if ARGV.include? "-auto" or ARGV.include? "-circle"
-	filename = "crosspoints.yaml"
+if resp == "y"
+	filename = "crosspoints.yaml" if filename == ""
 	arduino.automatic_mode(r,v,filename)
 end
-server_thread.join
-server_thread.exit
+
+#server_thread.join
+server_thread.kill
+arduino.puts "M"
+puts "Program ended - Click ENTER to exit"
+STDIN.gets
