@@ -58,9 +58,9 @@ module InverseKinematics
       else	
       	if self.inlimits? sol[1]
       		@joints = sol[1]
-      		@pose = pose
+      		@pose = pose     		
       		return 1
-      	else
+      	else     	
       		return 0
       	end
       end      	

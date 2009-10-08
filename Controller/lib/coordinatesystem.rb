@@ -97,6 +97,8 @@ end
 end
 
 if __FILE__ == $0
+require 'matrix'
+require 'coordinatesystem'
 include CoordinateSystem
 
 p0 = Point.new([5.0 , 0.0 , -1.0])
