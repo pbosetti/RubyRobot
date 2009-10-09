@@ -1,3 +1,6 @@
+# The module InverseKinematics provides to calculate the inverse kinematics of a <b>four axis manipulator</b> like Puma560.
+
+# Added the method <b>to_rad</b> and <b>to_deg</b> at the Float class.
 class Float
   TO_RAD = Math::PI/180.0
   def to_rad; self * TO_RAD; end
@@ -7,6 +10,7 @@ end
 module InverseKinematics
   include Math
   
+# This class inherit from Exception class.
   class OutOfRange < Exception
 
   end
@@ -15,14 +19,26 @@ module InverseKinematics
    attr_accessor :l, :home, :pose, :limits
     attr_accessor :joints
     attr_reader :wrist
+
+# Set the parameters of this class.
+# The <b>cfg</b> hash must contain:
+# - <b>:l</b> => array with the 4 length of arm
+# - <b>:home</b> => the base position of joints
+# - <b>:limits</b> => the work's range of every joints
     def initialize(cfg={})
       @l =      cfg[:l]     
-      @home =   cfg[:theta] 
+      @home =   cfg[:home] 
       @limits = cfg[:limits]
       @pose =   {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0}  
       @joints = Array.new(4,0.0)
     end
-    
+
+# Update the joints values for reach the <b>pose</b> position of end effector.
+# The <b>pose</b> hash must contain:
+# - <b>:x</b> => x position of end effector
+# - <b>:y</b> => y position of end effector
+# - <b>:z</b> => z position of end effector
+# - <b>:phi</b> => angular position of end effector
    def ik(pose=@pose)
       theta = atan2(pose[:y],pose[:x])
       r     = sqrt(pose[:x]**2+pose[:y]**2)

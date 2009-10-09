@@ -1,13 +1,21 @@
+# = Operation with coordinate system
+# This module manage the cartesian axis and calculate the roto-traslation matrix.
+
 require 'matrix'
 
 module CoordinateSystem
 
 AXES = {:X => 0, :Y => 1, :Z => 2}
+
+# The class Point inherit from Array.
 class Point < Array
+
+# Create a new istance of Point class.
     def Point.[](x=nil, y=nil, z=nil)
       Point.new([x, y, z])
     end
-    
+
+# Reader accessor to the array values.
     def [](i)
       case i
       when Numeric
@@ -21,7 +29,8 @@ class Point < Array
       end
       super(i)
     end
-    
+
+# Writer accessor to the array values.    
     def []=(i, v)
       case i
       when Numeric
@@ -35,21 +44,25 @@ class Point < Array
       end
       super(i, v)
     end
-    
+
+# Calculate the phythagoric length of a vector.    
     def r
       Math::sqrt(self[0]**2 + self[1]**2 + self[2]**2)
     end
-    
+
+# Returns the normalized vector.
     def normalize
     	self / self.r
     end
-    
+
+# Divide every value of array to n.
     def / (n)
     	self.each_index do |i|
     		self[i] /= n
     	end	
     end
-    
+
+# Calculate the vector between two Point.    
     def -(other)
       Point[ self[0] - other[0],
         self[1] - other[1],
@@ -61,10 +74,15 @@ class Point < Array
     end
 end
 
-
+# The Cartesian Axis class calculate the roto-traslation matrix from 3 Points:
+# - <b>p0</b> rapresent the origin point
+# - <b>p1</b> rapresent the direction of x axes
+# - <b>p0</b> rapresent a general point on xy plane.
 class CartesianAxis
+
     attr_reader :p0, :vx, :vy, :vz, :rtm, :plane
-    
+
+# Returns a roto-traslation matrix of this CaertesianAxis class.
 	def initialize (p0,p1,p2)
 		@p0 = p0
 		plane = Plane.new(p0,p1,p2)
@@ -76,16 +94,20 @@ class CartesianAxis
 
 end
 
+# This class calculate the plane coefficients from 3 Points.
+# The class variable <b>coeff</b> contain the coefficient a,b,c,d of equation ax+by+cz+d=0
 class Plane
 	attr_reader :coeff
-	
+
+# Returns the plane coefficients from 3 Points.	
 	def initialize(p1,p2,p3)
 		@coeff = {:a => p2[1]*p3[2]-p2[1]*p1[2]-p1[1]*p3[2]-p2[2]*p3[1]+p2[2]*p1[1]+p1[2]*p3[1],
 				  :b => -p2[0]*p3[2]+p2[0]*p1[2]-p3[0]*p1[2]+p3[0]*p2[2]+p1[0]*p3[2]-p1[0]*p2[2],
 				  :c => -p3[0]*p2[1]+p2[0]*p3[1]+p1[0]*p2[1]-p2[0]*p1[1]+p3[0]*p1[1]-p1[0]*p3[1],
 				  :d => p3[0]*p2[1]*p1[2]-p3[0]*p2[2]*p1[1]-p2[0]*p1[2]*p3[1]-p1[0]*p2[1]*p3[2]+p2[0]*p1[1]*p3[2]+p1[0]*p3[1]*p2[2] }	  
 	end
-	
+
+# Returns the orthogonal vector of the Plane traslated in <b>point</b> coordinates.
 	def ortho_vector(point)
 		v = Point.new([point[0]+@coeff[:a],point[1]+@coeff[:b],point[2]+@coeff[:c]])
 		return v.normalize

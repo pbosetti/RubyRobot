@@ -16,6 +16,7 @@ require "lib/arduino"
 	end
 end
 
+system "clear"
 help = Help.new
 
 if ARGV.include? "--help"

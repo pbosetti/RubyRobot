@@ -1,6 +1,21 @@
+# = Create a Basic Shape
+# With this module you can create a basic shape like:
+# - conical spiral
+# - cilindrical spiral
+# - spiral (planar)
+# - circle
+# The method <b>create</b> of every class return a <b>proc</b> element that describes the shape.
+
 module BasicShape
 
 	class ConicalSpiral
+# This method received <b>par</b> that contain all that parameters:
+# - <b>:vr</b>    => radial velocity [mm/s]
+# - <b>:vz</b>    => linear velocity [mm/s]
+# - <b>:omega</b> => ang velocity [rad/s]
+# - <b>:ri</b>    => initial radius [mm]
+# - <b>:zi</b>    => initial z coordinate [mm]
+# - <b>:rtm</b>   => roto-traslation matrix [4x4]
 		def create (par={})
 			@vr = par[:vr]
 			@vz = par[:vz]
@@ -19,27 +34,47 @@ module BasicShape
 			end			
 		end
 	end
-	
+
+# The class CilindricalSpiral inherit from ConicalSpiral.
 	class CilindricalSpiral < ConicalSpiral
+# This method received <b>par</b> that contain all that parameters:
+# - <b>:vz</b>    => linear velocity [mm/s]
+# - <b>:omega</b> => ang velocity [rad/s]
+# - <b>:ri</b>    => initial radius [mm]
+# - <b>:zi</b>    => initial z coordinate [mm]
+# - <b>:rtm</b>   => roto-traslation matrix [4x4]
 		def create (par={})
 			super(par.merge({:vr => 0.0}))
         end
 	end
-	
+
+# The class Spiral inherit from ConicalSpiral.
 	class Spiral < ConicalSpiral
+# This method received <b>par</b> that contain all that parameters:
+# - <b>:vr</b>    => radial velocity [mm/s]
+# - <b>:omega</b> => ang velocity [rad/s]
+# - <b>:ri</b>    => initial radius [mm]
+# - <b>:zi</b>    => initial z coordinate [mm]
+# - <b>:rtm</b>   => roto-traslation matrix [4x4]		
 		def create (par={})
 			super(par.merge({:vz => 0.0}))
         end
 	end
 
+# The class Circle inherit from ConicalSpiral.
 	class Circle < ConicalSpiral
+# This method received <b>par</b> that contain all that parameters:
+# - <b>:omega</b> => ang velocity [rad/s]
+# - <b>:ri</b>    => initial radius [mm]
+# - <b>:zi</b>    => initial z coordinate [mm]
+# - <b>:rtm</b>   => roto-traslation matrix [4x4]	
 		def create (par={})
 			super(par.merge({:vz => 0.0, :vr => 0.0, }))
         end			
 	end
 
 end
-
+r
 if __FILE__ == $0
 require "yaml"
 require "coordinatesystem"
