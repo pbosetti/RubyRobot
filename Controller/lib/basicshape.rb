@@ -74,7 +74,7 @@ module BasicShape
 	end
 
 end
-r
+
 if __FILE__ == $0
 require "yaml"
 require "coordinatesystem"

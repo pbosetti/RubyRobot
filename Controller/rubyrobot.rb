@@ -4,11 +4,12 @@ require "yaml"
 require 'rubygems'
 require 'serialport'
 require "lib/coordinatesystem"
-require "lib/ik"
+#require "lib/ik"
 require "lib/viewer"
 require "lib/help"
 require "lib/basicshape"
 require "lib/arduino"
+require "lib/Dynamics"
 
 %w[ABRT HUP INT TERM].each do |s|
   Signal.trap(s) do
@@ -25,7 +26,7 @@ if ARGV.include? "--help"
 end
 
 include Arduino
-include InverseKinematics
+include InverseKinematicsAndDynamics
 
 begin
 	baudrate = 57600
@@ -77,9 +78,13 @@ config = {
     -180.0.to_rad..180.0.to_rad,
     -180.0.to_rad..180.0.to_rad,
     -180.0.to_rad..180.0.to_rad
-  ]
+  ],
+  :psi => 0.0
 }
 r = Puma560.new(config)
+res = r.dynamics
+puts res.inspect
+exit(0)
 target = {:x=>100.0, :y => 100.0, :z => -10.0, :phi => -90.0.to_rad}
 r.ik(target)
 joints = r.joints.map {|v| v.to_deg}
@@ -115,19 +120,19 @@ v.bodies << BoxBody.new(
 server_thread = Thread.new { v.run }
 
 if shape != nil
-t = 0
-resp = ""
-print "Do you want to change the Coordinate System? <y/n>: "
-resp = STDIN.gets.chomp
-puts
-if resp == "y"
-	changeCS = true
-	rtm = arduino.get_rtm(r,target,v)
-else
-	changeCS = false
-	rtm = Matrix.identity(4)
-end
+	t = 0
 	resp = ""
+	print "Do you want to change the Coordinate System? <y/n>: "
+	resp = STDIN.gets.chomp
+	puts
+	if resp == "y"
+		changeCS = true
+		rtm = arduino.get_rtm(r,target,v)
+	else
+		changeCS = false
+		rtm = Matrix.identity(4)
+	end
+		resp = ""
 end
 
 if datacapture
@@ -136,7 +141,7 @@ if datacapture
 	resp = STDIN.gets.chomp
 elsif shape != nil
 	include BasicShape
-	puts "Creating path..."
+	print "Creating path"
 	param = YAML::load_file("parameters.yaml")[shape]
 	case shape
 		when :circle
@@ -159,10 +164,18 @@ elsif shape != nil
 		crosspoints << {:x => points.last[0],:y => points.last[1],
 						:z => points.last[2],:phi => -1.57, :time => t}
 		t += dt
+		if t/T > 0.75
+			print "."
+		elsif t/T > 0.50
+			print "."
+		elsif t/T > 0.25
+			print "."
+		end	
 		filename = "crosspoints.yaml" if filename == ""
 		File.open(filename, "w") {|f| YAML.dump(crosspoints, f)}
 	end
-	puts "... finish"
+	print "finish"
+	puts
 	print "Do you want to do the selected path? <y/n>: "
 	resp = STDIN.gets.chomp
 end

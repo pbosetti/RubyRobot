@@ -1,4 +1,4 @@
-# The module InverseKinematics provides to calculate the inverse kinematics of a <b>four axis manipulator</b> like Puma560.
+# The module InverseKinematicsAndDynamics provides to calculate the inverse kinematics and the inverse dynamics of a <b>four axis manipulator</b> like Puma560.
 
 # Added the method <b>to_rad</b> and <b>to_deg</b> at the Float class.
 class Float
@@ -7,7 +7,7 @@ class Float
   def to_deg; self / TO_RAD; end
 end
 
-module InverseKinematics
+module InverseKinematicsAndDynamics
   include Math
   
 # This class inherit from Exception class.
@@ -26,15 +26,28 @@ module InverseKinematics
 # - <b>:home</b> => the base position of joints
 # - <b>:limits</b> => the work's range of every joints
     def initialize(cfg={})
-      @l =      cfg[:l]     
-      @home =   cfg[:home] 
-      @limits = cfg[:limits]
-      @pose =   {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0}  
-      @joints = Array.new(4,0.0)
+		@l       = cfg[:l]     
+		@home    = cfg[:home] 
+		@limits  = cfg[:limits]
+		@psi	 = cfg[:psi]
+		@pose    = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 1.0 }
+		@vel	 = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }
+		@acc	 = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }		
+		@joints  = Array.new(4,0.0)
+		@vjoints = Array.new(4,0.0)
+		@ajoints  = Array.new(4,0.0)
+		# The Denavit-Hartenberg coefficients
+#		@a       = cfg[:a]
+#		@alpha   = cfg[:alpha]
+#		@d       = cfg[:d]
+		# The inertial parameters
+#		@m       = cfg[:m]
+#		@inertia = cfg[:inertia]
+#		@mm      = cfg[:mm]		
     end
 
 # Update the joints values for reach the <b>pose</b> position of end effector.
-# The <b>pose</b> hash must contain:
+# The <b>pose</b> hash must contains:
 # - <b>:x</b> => x position of end effector
 # - <b>:y</b> => y position of end effector
 # - <b>:z</b> => z position of end effector
@@ -82,7 +95,8 @@ module InverseKinematics
       end      	
       	  
     end
-    
+
+# Determine if the solution is in limits.
     def inlimits? (solution=@joints)
     	inlimits = true
     	solution.each_index do |i|
@@ -92,7 +106,6 @@ module InverseKinematics
     end
   end
 end  
-
 
 if __FILE__ == $0  
 include InverseKinematics
