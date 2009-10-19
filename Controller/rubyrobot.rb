@@ -79,11 +79,17 @@ config = {
     -180.0.to_rad..180.0.to_rad,
     -180.0.to_rad..180.0.to_rad
   ],
-  :psi => 0.0
+  :psi => 0.0,
+  :a => [0.0, 0.0, 0.0, 0.0],
+  :alpha => [0.0, 0.0, 0.0, 0.0],
+  :d => [0.0, 0.0, 0.0, 0.0],  
+  :m => [0.0, 0.0, 0.0, 0.0],
+  :inertia => [0.0, 0.0, 0.0, 0.0],
+  :mm => [0.0, 0.0, 0.0, 0.0]
 }
 r = Puma560.new(config)
-res = r.dynamics
-puts res.inspect
+torque = r.dynamics
+puts torque.inspect
 exit(0)
 target = {:x=>100.0, :y => 100.0, :z => -10.0, :phi => -90.0.to_rad}
 r.ik(target)

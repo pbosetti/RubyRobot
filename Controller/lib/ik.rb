@@ -16,7 +16,7 @@ module InverseKinematicsAndDynamics
   end
   
   class Puma560
-   attr_accessor :l, :home, :pose, :limits
+   attr_accessor :l, :home, :pose, :vel, :acc, :limits
     attr_accessor :joints
     attr_reader :wrist
 
@@ -30,20 +30,20 @@ module InverseKinematicsAndDynamics
 		@home    = cfg[:home] 
 		@limits  = cfg[:limits]
 		@psi	 = cfg[:psi]
-		@pose    = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 1.0 }
+		@pose    = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }
 		@vel	 = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }
 		@acc	 = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }		
 		@joints  = Array.new(4,0.0)
 		@vjoints = Array.new(4,0.0)
 		@ajoints  = Array.new(4,0.0)
 		# The Denavit-Hartenberg coefficients
-#		@a       = cfg[:a]
-#		@alpha   = cfg[:alpha]
-#		@d       = cfg[:d]
+		@a       = cfg[:a]
+		@alpha   = cfg[:alpha]
+		@d       = cfg[:d]
 		# The inertial parameters
-#		@m       = cfg[:m]
-#		@inertia = cfg[:inertia]
-#		@mm      = cfg[:mm]		
+		@m       = cfg[:m]
+		@i		 = cfg[:inertia]
+		@mm      = cfg[:mm]		
     end
 
 # Update the joints values for reach the <b>pose</b> position of end effector.
