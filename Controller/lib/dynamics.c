@@ -6,6 +6,7 @@
 #include "ruby.h"
 #include <math.h>
 #include <st.h>
+#include "dyneqns.h"
 
 typedef struct hash {
 	char * key;
@@ -53,15 +54,50 @@ void hash_converts(VALUE rubyhash, hash *chash, int n)
 VALUE puma560, module;
 double cl[4], cpsi;
 hash   cpose[4], cvel[4], cacc[4];
-double cjoints[4], cvjoints[4], cajoints[4], ctorque[4];
-double ca[4], calpha[4], cd[4];
-double cm[4], ci[4], cmm[4];
+double cjoints[4], cvjoints[4], cajoints[4], ctjoints[4];
+double cm[4], ci[4][3], cmm[4];
+
+char * x = "x";
+char * y = "y";
+char * z = "z";
+char * phi = "phi";
+
+
+void hash2vector (double * cp,double * cv,double * ca) {
+	cp[0] = hget(cpose,x);
+	cv[0] = hget(cvel,x);
+	ca[0] = hget(cacc,x);
+	cp[1] = hget(cpose,y);
+	cv[1] = hget(cvel,y);
+	ca[1] = hget(cacc,y);
+	cp[2] = hget(cpose,z);
+	cv[2] = hget(cvel,z);
+	ca[2] = hget(cacc,z);
+	cp[3] = hget(cpose,phi);
+	cv[3] = hget(cvel,phi);
+	ca[3] = hget(cacc,phi);
+}
+
+void vector2hash (double * cp,double * cv,double * ca) {
+	hset(cpose,x,cp[0]);
+	hset(cvel,x,cv[0]);
+	hset(cacc,x,ca[0]);
+	hset(cpose,y,cp[1]);
+	hset(cvel,y,cv[1]);
+	hset(cacc,y,ca[1]);
+	hset(cpose,z,cp[2]);
+	hset(cvel,z,cv[2]);
+	hset(cacc,z,ca[2]);
+	hset(cpose,phi,cp[3]);
+	hset(cvel,phi,cv[3]);
+	hset(cacc,phi,ca[3]);
+}
 
 void cartesian_velocity()
 {
  double val;
- int i;
  int n=4;
+ int i;
  for (i=0;i<n;i++) {
 	switch (cvel[i].key[0]) {
 		case 'x': val = 10;
@@ -79,8 +115,8 @@ void cartesian_velocity()
 void cartesian_acceleration()
 {
  double val;
- int i;
  int n=4;
+ int i;   
  for (i=0;i<n;i++) {
 	switch (cacc[i].key[0]) {
 		case 'x': val = 10;
@@ -97,26 +133,41 @@ void cartesian_acceleration()
 
 void joints_velocity()
 {
- cvjoints[0] = 10;
- cvjoints[1] = 10;
- cvjoints[2] = 10;
- cvjoints[3] = 10;
+ int n=4;
+ int i;
+ double cp[4], cv[4], ca[4];
+ hash2vector(cp,cv,ca);
+ 
+ v0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
+ v1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
+ v2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
+ v3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
 }
 
 void joints_acceleration()
 {
- cajoints[0] = 10;
- cajoints[1] = 10;
- cajoints[2] = 10;
- cajoints[3] = 10;
+ int n=4;
+ int i;
+ double cp[4], cv[4], ca[4];
+ hash2vector(cp,cv,ca);
+ 
+ a0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
+ a1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
+ a2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
+ a3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
 }
 
 void joints_torque()
 {
- ctorque[0] = 10;
- ctorque[1] = 20;
- ctorque[2] = 30;
- ctorque[3] = 40;  
+ int n=4;
+ int i;
+ double cp[4], cv[4], ca[4];
+ hash2vector(cp,cv,ca);
+ 
+ t0(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
+ t1(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
+ t2(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
+ t3(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
 }
 
 static VALUE dynamics(VALUE self) {
@@ -146,31 +197,21 @@ static VALUE dynamics(VALUE self) {
     var  = rb_iv_get(self,"@vjoints");
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
-    	cvjoints[i] = NUM2DBL(rb_ary_entry(var, i));	
+    	cvjoints[i] = NUM2DBL(rb_ary_entry(var, i));	    	
     var  = rb_iv_get(self,"@ajoints");
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
     	cajoints[i] = NUM2DBL(rb_ary_entry(var, i));
-	var  = rb_iv_get(self,"@a");
-    n = RARRAY(var)->len;
-    for (i=0;i<n;i++)
-   		ca[i] = NUM2DBL(rb_ary_entry(var, i));
-   	var  = rb_iv_get(self,"@alpha");
-    n = RARRAY(var)->len;
-    for (i=0;i<n;i++)
-    	calpha[i] = NUM2DBL(rb_ary_entry(var, i));	
-    var  = rb_iv_get(self,"@d");
-    n = RARRAY(var)->len;
-    for (i=0;i<n;i++)
-    	cd[i] = NUM2DBL(rb_ary_entry(var, i));
     var  = rb_iv_get(self,"@m");
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
     	cm[i] = NUM2DBL(rb_ary_entry(var, i));
     var  = rb_iv_get(self,"@i");
     n = RARRAY(var)->len;
-    for (i=0;i<n;i++)
-    	ci[i] = NUM2DBL(rb_ary_entry(var, i));	
+    int j;
+	for (i=0;i<n;i++)    
+		for (j=0;j<3;j++)
+			ci[i][j] = NUM2DBL(rb_ary_entry(rb_ary_entry(var, i),j));			
    	var  = rb_iv_get(self,"@mm");
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
@@ -178,9 +219,17 @@ static VALUE dynamics(VALUE self) {
     	
     cartesian_velocity();
     cartesian_acceleration();
+    printf("FUNZIONA\n");
     joints_velocity();
+/*    printf("Velocity: ");
+    printf("%f , %f , %f , %f \n",cvjoints[0],cvjoints[1],cvjoints[2],cvjoints[3]);
     joints_acceleration();
+    printf("Acceleration: ");    
+    printf("%f , %f , %f , %f \n",cajoints[0],cajoints[1],cajoints[2],cajoints[3]);
     joints_torque();
+	printf("Torque: ");    
+    printf("%f , %f , %f , %f \n",ctjoints[0],ctjoints[1],ctjoints[2],ctjoints[3]);
+*/
     
 	n = 4;
 	var = rb_hash_new();	
@@ -201,7 +250,7 @@ static VALUE dynamics(VALUE self) {
     rb_iv_set(self,"@ajoints", var);
 	var = rb_ary_new2(n);
 	for (i=0;i<n;i++)
-		rb_ary_store(var, i, rb_float_new(ctorque[i]));
+		rb_ary_store(var, i, rb_float_new(ctjoints[i]));
 //	rb_iv_set(self,"@torque", var);
     return var;
 }

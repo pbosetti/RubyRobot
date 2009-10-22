@@ -25,6 +25,9 @@ module InverseKinematicsAndDynamics
 # - <b>:l</b> => array with the 4 length of arm
 # - <b>:home</b> => the base position of joints
 # - <b>:limits</b> => the work's range of every joints
+# - <b>:a </b> => the <i>a</i> coefficients of Denavit-Hartenberg
+# - <b>:alpha</b> => the <i>alpha</i> coefficients of Denavit-Hartenberg
+# - <b>:d</b> => the <i>d</i> coefficients of Denavit-Hartenberg
     def initialize(cfg={})
 		@l       = cfg[:l]     
 		@home    = cfg[:home] 
@@ -36,10 +39,6 @@ module InverseKinematicsAndDynamics
 		@joints  = Array.new(4,0.0)
 		@vjoints = Array.new(4,0.0)
 		@ajoints  = Array.new(4,0.0)
-		# The Denavit-Hartenberg coefficients
-		@a       = cfg[:a]
-		@alpha   = cfg[:alpha]
-		@d       = cfg[:d]
 		# The inertial parameters
 		@m       = cfg[:m]
 		@i		 = cfg[:inertia]

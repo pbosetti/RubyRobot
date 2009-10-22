@@ -84,13 +84,16 @@ config = {
   :alpha => [0.0, 0.0, 0.0, 0.0],
   :d => [0.0, 0.0, 0.0, 0.0],  
   :m => [0.0, 0.0, 0.0, 0.0],
-  :inertia => [0.0, 0.0, 0.0, 0.0],
+  :inertia => [[0.0, 0.0, 0.0],  # Ix1, Iy1, Iz1
+			   [0.0, 0.0, 0.0],  # Ix2, Iy2, Iz2
+			   [0.0, 0.0, 0.0],  # Ix3, Iy3, Iz3
+			   [0.0, 0.0, 0.0]], # Ix4, Iy4, Iz4
   :mm => [0.0, 0.0, 0.0, 0.0]
 }
 r = Puma560.new(config)
-torque = r.dynamics
-puts torque.inspect
-exit(0)
+#torque = r.dynamics
+#puts torque.inspect
+#exit(0)
 target = {:x=>100.0, :y => 100.0, :z => -10.0, :phi => -90.0.to_rad}
 r.ik(target)
 joints = r.joints.map {|v| v.to_deg}
@@ -191,7 +194,7 @@ if resp == "y"
 	arduino.automatic_mode(r,v,filename)
 end
 
-#server_thread.join
+server_thread.join
 server_thread.kill
 arduino.puts "M"
 puts "Program ended - Click ENTER to exit"
