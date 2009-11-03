@@ -16,8 +16,8 @@ module InverseKinematicsAndDynamics
   end
   
   class Puma560
-   attr_accessor :l, :home, :pose, :vel, :acc, :limits
-    attr_accessor :joints
+   attr_accessor :l, :home, :pose, :vel, :acc, :limits, :psi
+    attr_accessor :joints, :vjoints, :ajoints
     attr_reader :wrist
 
 # Set the parameters of this class.
@@ -33,6 +33,7 @@ module InverseKinematicsAndDynamics
 		@home    = cfg[:home] 
 		@limits  = cfg[:limits]
 		@psi	 = cfg[:psi]
+		@soln    = 0		
 		@pose    = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }
 		@vel	 = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }
 		@acc	 = {:x => 0.0, :y => 0.0, :z => 0.0, :phi => 0.0 }		
@@ -42,7 +43,10 @@ module InverseKinematicsAndDynamics
 		# The inertial parameters
 		@m       = cfg[:m]
 		@i		 = cfg[:inertia]
-		@mm      = cfg[:mm]		
+		@mm      = cfg[:mm]	
+		# The external forces and torques
+		@Rext    = cfg[:Rext]
+		@Text    = cfg[:Text]		
     end
 
 # Update the joints values for reach the <b>pose</b> position of end effector.
@@ -79,6 +83,7 @@ module InverseKinematicsAndDynamics
       	if self.inlimits? sol[0]
       		@joints = sol[0]
       		@pose = pose
+      		@soln = 0
       		return 1
       	else
       		return 0
@@ -87,6 +92,7 @@ module InverseKinematicsAndDynamics
       	if self.inlimits? sol[1]
       		@joints = sol[1]
       		@pose = pose     		
+      		@soln = 0
       		return 1
       	else     	
       		return 0

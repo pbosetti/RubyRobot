@@ -28,6 +28,7 @@ end
 include Arduino
 include InverseKinematicsAndDynamics
 
+if !ARGV.include? "-no-arduino"
 begin
 	baudrate = 57600
 	usbport  = "/dev/ttyUSB0"
@@ -37,6 +38,7 @@ rescue
 	exit(0)
 end
 puts "Connected with #{usbport} @#{baudrate} bps"
+end
 
 basicShape = {:circle => "-circle", :conical_spiral => "-conicalspiral",
 			  :cilindrical_spiral => "-cilindricalspiral",
@@ -79,7 +81,7 @@ config = {
     -180.0.to_rad..180.0.to_rad,
     -180.0.to_rad..180.0.to_rad
   ],
-  :psi => 0.0,
+  :psi => -90.0.to_rad,
   :a => [0.0, 0.0, 0.0, 0.0],
   :alpha => [0.0, 0.0, 0.0, 0.0],
   :d => [0.0, 0.0, 0.0, 0.0],  
@@ -88,12 +90,12 @@ config = {
 			   [0.0, 0.0, 0.0],  # Ix2, Iy2, Iz2
 			   [0.0, 0.0, 0.0],  # Ix3, Iy3, Iz3
 			   [0.0, 0.0, 0.0]], # Ix4, Iy4, Iz4
-  :mm => [0.0, 0.0, 0.0, 0.0]
+  :mm => [0.0, 0.0, 0.0, 0.0],
+  :Rext => [0.0, 0.0, 0.0, 0.0],
+  :Text => [0.0, 0.0, 0.0, 0.0]  
 }
 r = Puma560.new(config)
-#torque = r.dynamics
-#puts torque.inspect
-#exit(0)
+
 target = {:x=>100.0, :y => 100.0, :z => -10.0, :phi => -90.0.to_rad}
 r.ik(target)
 joints = r.joints.map {|v| v.to_deg}

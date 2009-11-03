@@ -4,7 +4,6 @@
  */
  
 #include "ruby.h"
-#include <math.h>
 #include <st.h>
 #include "dyneqns.h"
 
@@ -31,7 +30,7 @@ double hget(hash *chash, char* key)
  int found = 0;
  int i = 0;
  while (found == 0) {
- 	if (chash[i].key == key)
+ 	if (chash[i].key[0] == key[0])
  		found = 1;
  	else
  		i++;
@@ -56,6 +55,8 @@ double cl[4], cpsi;
 hash   cpose[4], cvel[4], cacc[4];
 double cjoints[4], cvjoints[4], cajoints[4], ctjoints[4];
 double cm[4], ci[4][3], cmm[4];
+double cRext[3], cText[3];
+int csoln;
 
 char * x = "x";
 char * y = "y";
@@ -137,11 +138,10 @@ void joints_velocity()
  int i;
  double cp[4], cv[4], ca[4];
  hash2vector(cp,cv,ca);
- 
- v0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
- v1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
- v2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
- v3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints);
+ v0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
+ v1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
+ v2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
+ v3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
 }
 
 void joints_acceleration()
@@ -151,10 +151,10 @@ void joints_acceleration()
  double cp[4], cv[4], ca[4];
  hash2vector(cp,cv,ca);
  
- a0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
- a1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
- a2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
- a3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints);
+ a0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
+ a1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
+ a2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
+ a3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
 }
 
 void joints_torque()
@@ -164,10 +164,10 @@ void joints_torque()
  double cp[4], cv[4], ca[4];
  hash2vector(cp,cv,ca);
  
- t0(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
- t1(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
- t2(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
- t3(cl,cpsi,cp,cv,ca,cm,ci,cmm,ctjoints);
+ t0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cjoints,cvjoints,cajoints,cRext,cText,ctjoints);
+ t1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cjoints,cvjoints,cajoints,cRext,cText,ctjoints);
+ t2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cjoints,cvjoints,cajoints,cRext,cText,ctjoints);
+ t3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cjoints,cvjoints,cajoints,cRext,cText,ctjoints);
 }
 
 static VALUE dynamics(VALUE self) {
@@ -179,6 +179,7 @@ static VALUE dynamics(VALUE self) {
     	cl[i] = NUM2DBL(rb_ary_entry(var, i));
     var = rb_iv_get(self,"@psi");
     cpsi = NUM2DBL(var);
+    printf("cpsi = %f\n",cpsi);	
     var  = rb_iv_get(self,"@pose");
 	n = RHASH(var)->tbl->num_entries;
     hash_converts(var, cpose, n);
@@ -216,12 +217,21 @@ static VALUE dynamics(VALUE self) {
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
     	cmm[i] = NUM2DBL(rb_ary_entry(var, i));	
-    	
-    cartesian_velocity();
-    cartesian_acceleration();
-    printf("FUNZIONA\n");
+    var = rb_iv_get(self,"@soln");
+    csoln = NUM2INT(var);
+    var  = rb_iv_get(self,"@Rext");
+    n = RARRAY(var)->len;
+    for (i=0;i<n;i++)
+    	cRext[i] = NUM2DBL(rb_ary_entry(var, i));
+    	var  = rb_iv_get(self,"@Text");
+    n = RARRAY(var)->len;
+    for (i=0;i<n;i++)
+    	cText[i] = NUM2DBL(rb_ary_entry(var, i));
+
+    //cartesian_velocity();
+    //cartesian_acceleration();
     joints_velocity();
-/*    printf("Velocity: ");
+    printf("Velocity: ");
     printf("%f , %f , %f , %f \n",cvjoints[0],cvjoints[1],cvjoints[2],cvjoints[3]);
     joints_acceleration();
     printf("Acceleration: ");    
@@ -229,7 +239,7 @@ static VALUE dynamics(VALUE self) {
     joints_torque();
 	printf("Torque: ");    
     printf("%f , %f , %f , %f \n",ctjoints[0],ctjoints[1],ctjoints[2],ctjoints[3]);
-*/
+
     
 	n = 4;
 	var = rb_hash_new();	

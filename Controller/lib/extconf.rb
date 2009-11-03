@@ -12,24 +12,32 @@ require 'erubis'
 input = File.read('dyneqns.erubis')
 eruby = Erubis::Eruby.new(input)
 
-equations = {:vjoints => ["1","1","1","1"],
-			 :ajoints => ["1","1","1","1"],
-			 :tjoints  => ["1","1","1","1"]}
+equations = {:vjoints => [["","","",""],["","","",""]],
+		   :ajoints => [["","","",""],["","","",""]],
+		   :tjoints => ["","","",""]}
 			 
-#File.open('equations.txt', "r") do |f| 
-#	for i in 0..3
-#		string = f.gets.chomp
-#		equations[:vjoints][i] = string[8..string.size]	
-#	end
-#	for i in 0..3
-#		string = f.gets.chomp
-#		equations[:ajoints][i] = string[8..string.size]	
-#	end
-#	for i in 0..3
-#		string = f.gets.chomp
-#		equations[:tjoints][i] = string[8..string.size]	
-#	end
-#end
+File.open('Equations.txt', "r") do |f|	
+	for i in 0..3
+		string = f.gets.chomp
+		equations[:vjoints][0][i] = string[8..string.size]
+		if i!=0
+			string = f.gets.chomp
+			equations[:vjoints][1][i] = string[8..string.size]
+		end	
+	end
+	for i in 0..3
+		string = f.gets.chomp
+		equations[:ajoints][0][i] = string[8..string.size]
+		if i!=0
+			string = f.gets.chomp
+			equations[:ajoints][1][i] = string[8..string.size]
+		end
+	end
+	for i in 0..3
+		string = f.gets.chomp
+		equations[:tjoints][i] = string[8..string.size]
+	end
+end
 			 
 
 File.open('dyneqns.c', "w") do |f| 
