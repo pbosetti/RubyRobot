@@ -6,6 +6,7 @@ int ik (float *coords, float *joints, float *l, float *minlimits,
         float *maxlimits, int length) {
 
 float sol[2][4];
+float cumError[2];
 float r = sqrt(pow(coords[0],2)+pow(coords[1],2));
 float theta = atan2(coords[1],coords[0]);
 float wrist[3] = {r-l[3]*cos(coords[3]),
@@ -40,12 +41,18 @@ for (i=0; i<=1; i++)
       if (sol[i][j] < minlimits[j] || sol[i][j] > maxlimits[j])
         inrange *= 0;
 if (inrange) {
+  cumError[0] = 0;
+  cumError[1] = 0;
   for (i=0; i<length; i++) {
-    if (abs(sol[0][i]-joints[i]) > abs(sol[1][i]-joints[i]))
-      joints[i] = sol[1][i];
-    else
-      joints[i] = sol[0][i];
+    cumError[0] += pow((sol[0][i]-joints[i]),2);
+    cumError[1] += pow((sol[1][i]-joints[i]),2);
   }
+  if (cumError[0] > cumError[1])
+    j = 1;
+  else
+    j = 0;  
+  for (i=0; i<length; i++)
+      joints[i] = sol[j][i];
   return 1;
 } 
 else          
