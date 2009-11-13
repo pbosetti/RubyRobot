@@ -22,7 +22,11 @@ module BasicShape
 			@omega = par[:omega]
 			@ri = par[:ri]
 			@zi = par[:zi]
-			@rtm = par[:rtm]
+			if par[:rtm] != nil
+				@rtm = par[:rtm]
+			else
+				@rtm = Matrix.identity(4)
+			end
 			p = Array.new(3)
 			proc do |t|
 				p1 = Matrix.column_vector [(@ri+@vr*t)*Math::cos(@omega*t),
