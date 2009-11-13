@@ -137,10 +137,8 @@ if shape != nil
 	resp = STDIN.gets.chomp
 	puts
 	if resp == "y"
-		changeCS = true
 		rtm = arduino.get_rtm(r,target,v)
 	else
-		changeCS = false
 		rtm = Matrix.identity(4)
 	end
 		resp = ""
