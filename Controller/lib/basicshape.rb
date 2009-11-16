@@ -86,7 +86,7 @@ include CoordinateSystem
 include BasicShape
 
 p0 = Point.new([100.0 , 100.0 , -10.0])
-p1 = Point.new([10.0 , 0.0 , -10.0])
+p1 = Point.new([10.0 , 0.0 , 10.0])
 p2 = Point.new([0.0 , -1.0 , -10.0])
 
 t1 = CartesianAxis.new(p0,p1,p2)
@@ -113,11 +113,11 @@ z = Array.new
 
 t     = 0.0
 dt    = 0.05
-T     = 5.0
+T     = 1.3
 
 while t <= T
-#	points << circle_path.call(t)	
-	points << conical_spiral_path.call(t)
+	points << circle_path.call(t)	
+#	points << conical_spiral_path.call(t)
 	crosspoints << {:x => points.last[0],:y => points.last[1],:z => points.last[2],
 	             :phi => phi, :time => t}
 	t += dt
@@ -136,8 +136,9 @@ File.open("basicshape.r", "w") do |f|
 	f.puts "rm(list=ls(all=TRUE));"
 	f.puts "x <- c(#{x.join(",")})"
 	f.puts "y <- c(#{y.join(",")})"
-	f.puts "z <- c(#{z.join(",")})"	
-	f.puts "plot3d(x,y,z,col=\"blue\")"
+	f.puts "z <- c(#{z.join(",")})"
+	f.puts "plot3d(x,y,z,col=\"blue\",size=5)"
+	f.puts "plot3d(x,y,z,type=\"l\",add=T)"
 	f.puts "rgl.postscript(\"shape.pdf\", fmt=\"pdf\", drawText=TRUE)"
 end
 

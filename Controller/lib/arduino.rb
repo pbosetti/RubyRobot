@@ -21,12 +21,6 @@ class Controller < SerialPort
 		super(usbport, baudrate, 8, 1, SerialPort::NONE)
 	end
 	
-	def update_sim(v,r)
-		v.bodies.each_with_index do |b, i|
-			b.theta = r.joints[i].to_deg
-		end
-	end
-	
 	def data_capture(r,target,v,filename)
 		self.puts "M"
 		first_time_click = 0.0
@@ -63,7 +57,7 @@ class Controller < SerialPort
 				end
 				STDOUT.print r.joints, " "
 			end			
-			update_sim(v,r)	
+			update_sim(r,v)	
 			
 			if line[0] == 8 and ! rebound
 				File.open(filename, "w") {|f| YAML.dump(crosspoints, f)}
@@ -124,7 +118,7 @@ class Controller < SerialPort
 					end	
 				end	
 			end
-			self.update_sim(v,r)
+			self.update_sim(r,v)
 		end	
 		return rtm
 	end
@@ -147,6 +141,14 @@ class Controller < SerialPort
 			end
 			sleep cj[:time]-last_time
 			last_time = cj[:time]
+		end
+	end
+
+private
+
+	def update_sim(r,v)
+		v.bodies.each_with_index do |b, i|
+			b.theta = r.joints[i].to_deg
 		end
 	end
 	
