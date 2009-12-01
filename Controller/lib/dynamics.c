@@ -79,69 +79,51 @@ void hash2vector (double * cp,double * cv,double * ca) {
 	ca[3] = hget(cacc,phi);
 }
 
-void vector2hash (double * cp,double * cv,double * ca) {
-	hset(cpose,x,cp[0]);
-	hset(cvel,x,cv[0]);
-	hset(cacc,x,ca[0]);
-	hset(cpose,y,cp[1]);
-	hset(cvel,y,cv[1]);
-	hset(cacc,y,ca[1]);
-	hset(cpose,z,cp[2]);
-	hset(cvel,z,cv[2]);
-	hset(cacc,z,ca[2]);
-	hset(cpose,phi,cp[3]);
-	hset(cvel,phi,cv[3]);
-	hset(cacc,phi,ca[3]);
+void vector2hash (double * cx,hash * cxxx) {
+	hset(cxxx,x,cx[0]);
+	hset(cxxx,y,cx[1]);
+	hset(cxxx,z,cx[2]);
+	hset(cxxx,phi,cx[3]);
+}
+
+void cartesian_position()
+{
+ double cp[4];
+ p0(cl,cpsi,cjoints,cp,csoln);
+ p1(cl,cpsi,cjoints,cp,csoln);
+ p2(cl,cpsi,cjoints,cp,csoln);
+ p3(cl,cpsi,cjoints,cp,csoln);
+ vector2hash(cp,cpose)
 }
 
 void cartesian_velocity()
 {
- double val;
- int n=4;
- int i;
- for (i=0;i<n;i++) {
-	switch (cvel[i].key[0]) {
-		case 'x': val = 10;
-		break;
-		case 'y': val = 10;
-		break;
-		case 'z': val = 10;
-		break; 
-		case 'p': val = 10;
-	}
- 	hset(cvel, cvel[i].key, val);
- }
+ double cv[4];
+ v0(cl,cpsi,joints,cvjoints,cv,csoln);
+ v1(cl,cpsi,joints,cvjoints,cv,csoln);
+ v2(cl,cpsi,joints,cvjoints,cv,csoln);
+ v3(cl,cpsi,joints,cvjoints,cv,csoln);
+ vector2hash(cv,cvel);
 }
 
 void cartesian_acceleration()
 {
- double val;
- int n=4;
- int i;   
- for (i=0;i<n;i++) {
-	switch (cacc[i].key[0]) {
-		case 'x': val = 10;
-		break;
-		case 'y': val = 10;
-		break;
-		case 'z': val = 10;
-		break; 
-		case 'p': val = 10;
-	}
- 	hset(cacc, cacc[i].key, val);
- }
+ double ca[4];
+ a0(cl,cpsi,joints,cvjoints,cajoints,ca,csoln);
+ a1(cl,cpsi,joints,cvjoints,cajoints,ca,csoln);
+ a2(cl,cpsi,joints,cvjoints,cajoints,ca,csoln);
+ a3(cl,cpsi,joints,cvjoints,cajoints,ca,csoln);
+ vector2hash(ca,cacc);
 }
 
 void joints_velocity()
 {
- int n=4;
- int i;
  double cp[4], cv[4], ca[4];
  hash2vector(cp,cv,ca);
- v0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
- v1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
- v2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
- v3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cvjoints,csoln);
+ vj0(cl,cpsi,cp,cv,ca,cvjoints,csoln);
+ vj1(cl,cpsi,cp,cv,ca,cvjoints,csoln);
+ vj2(cl,cpsi,cp,cv,ca,cvjoints,csoln);
+ vj3(cl,cpsi,cp,cv,ca,cvjoints,csoln);
 }
 
 void joints_acceleration()
@@ -151,10 +133,10 @@ void joints_acceleration()
  double cp[4], cv[4], ca[4];
  hash2vector(cp,cv,ca);
  
- a0(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
- a1(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
- a2(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
- a3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cajoints,csoln);
+ aj0(cl,cpsi,cp,cv,ca,cajoints,csoln);
+ aj1(cl,cpsi,cp,cv,ca,cajoints,csoln);
+ aj2(cl,cpsi,cp,cv,ca,cajoints,csoln);
+ aj3(cl,cpsi,cp,cv,ca,cajoints,csoln);
 }
 
 void joints_torque()
@@ -170,7 +152,7 @@ void joints_torque()
  t3(cl,cpsi,cp,cv,ca,cm,ci,cmm,cjoints,cvjoints,cajoints,cRext,cText,ctjoints);
 }
 
-static VALUE dynamics(VALUE self) {
+static VALUE dynamics(VALUE self, VALUE type) {
 	VALUE var;
 	int i;
     var  = rb_iv_get(self,"@l");

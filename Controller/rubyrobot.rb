@@ -82,9 +82,9 @@ config = {
     -180.0.to_rad..180.0.to_rad
   ],
   :psi => -90.0.to_rad,
-  :a => [0.0, 0.0, 0.0, 0.0],
-  :alpha => [0.0, 0.0, 0.0, 0.0],
-  :d => [0.0, 0.0, 0.0, 0.0],  
+  :vmax => [0.0, 0.0, 0.0, 0.0], # inserire parametri caratterizzazione
+  :tmax => [0.0, 0.0, 0.0, 0.0], # inserire parametri caratterizzazione
+  :servopar => {:m => [], :q => [] }  
   :m => [0.0, 0.0, 0.0, 0.0],
   :inertia => [[0.0, 0.0, 0.0],  # Ix1, Iy1, Iz1
 			   [0.0, 0.0, 0.0],  # Ix2, Iy2, Iz2

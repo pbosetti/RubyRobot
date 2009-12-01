@@ -12,11 +12,26 @@ require 'erubis'
 input = File.read('dyneqns.erubis')
 eruby = Erubis::Eruby.new(input)
 
-equations = {:vjoints => [["","","",""],["","","",""]],
-		   :ajoints => [["","","",""],["","","",""]],
-		   :tjoints => ["","","",""]}
+equations = {:pose    => ["","","",""],
+			 :vel	  => ["","","",""],
+			 :acc	  => ["","","",""],
+			 :vjoints => [["","","",""],["","","",""]],
+			 :ajoints => [["","","",""],["","","",""]],
+			 :tjoints => ["","","",""]}
 			 
-File.open('Equations.txt', "r") do |f|	
+File.open('Equations.txt', "r") do |f|
+	for i in 0..3
+		string = f.gets.chomp
+		equations[:pose][i] = string[8..string.size]
+	end
+	for i in 0..3
+		string = f.gets.chomp
+		equations[:vel][i] = string[8..string.size]
+	end
+	for i in 0..3
+		string = f.gets.chomp
+		equations[:acc][i] = string[8..string.size]
+	end
 	for i in 0..3
 		string = f.gets.chomp
 		equations[:vjoints][0][i] = string[8..string.size]

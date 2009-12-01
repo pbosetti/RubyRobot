@@ -17,7 +17,7 @@ module InverseKinematicsAndDynamics
   
   class Puma560
    attr_accessor :l, :home, :pose, :vel, :acc, :limits, :psi
-    attr_accessor :joints, :vjoints, :ajoints
+    attr_accessor :joints, :vjoints, :ajoints, :tavail, :vmax
     attr_reader :wrist
 
 # Set the parameters of this class.
@@ -40,6 +40,10 @@ module InverseKinematicsAndDynamics
 		@joints  = Array.new(4,0.0)
 		@vjoints = Array.new(4,0.0)
 		@ajoints  = Array.new(4,0.0)
+		# The servomotors parameters
+		@vmax	 = cfg[:vmax]
+		@tmax	 = cfg[:tmax]
+		@tavail  = Array.new(4,0.0)
 		# The inertial parameters
 		@m       = cfg[:m]
 		@i		 = cfg[:inertia]
@@ -47,6 +51,13 @@ module InverseKinematicsAndDynamics
 		# The external forces and torques
 		@Rext    = cfg[:Rext]
 		@Text    = cfg[:Text]		
+    end
+    
+    def vjoints=(vj)
+		for i in 0..3
+    		@vjoints[i] = vj[i]
+    		@tavail[i]  = -tmax[i]/vmax[i]*vj[i]+tmax[i]
+    	end
     end
 
 # Update the joints values for reach the <b>pose</b> position of end effector.
@@ -80,7 +91,7 @@ module InverseKinematicsAndDynamics
       	cumError[1] += (@joints[i]-sol[1][i])**2      	
       end
       if cumError[1] > cumError[0]
-      	if self.inlimits? sol[0]
+      	if inlimits? sol[0]
       		@joints = sol[0]
       		@pose = pose
       		@soln = 0
@@ -89,10 +100,10 @@ module InverseKinematicsAndDynamics
       		return 0
       	end	
       else	
-      	if self.inlimits? sol[1]
+      	if inlimits? sol[1]
       		@joints = sol[1]
       		@pose = pose     		
-      		@soln = 0
+      		@soln = 1
       		return 1
       	else     	
       		return 0
@@ -100,6 +111,8 @@ module InverseKinematicsAndDynamics
       end      	
       	  
     end
+
+private
 
 # Determine if the solution is in limits.
     def inlimits? (solution=@joints)
