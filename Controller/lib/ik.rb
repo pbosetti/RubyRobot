@@ -56,7 +56,7 @@ module InverseKinematicsAndDynamics
     def vjoints=(vj)
 		for i in 0..3
     		@vjoints[i] = vj[i]
-    		@tavail[i]  = -tmax[i]/vmax[i]*vj[i]+tmax[i]
+    		@tavail[i]  = -@tmax[i]/@vmax[i]*vj[i]+@tmax[i]
     	end
     end
 

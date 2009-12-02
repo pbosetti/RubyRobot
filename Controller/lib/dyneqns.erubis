@@ -2,76 +2,72 @@
 #include "dyneqns.h"
 
 void p0 (double * cl, double cpsi, double * cjoints, double * cp, int csoln) {
-	cp[0] = <%= equations[:pose][0][0] %>
+	cp[0] = <%= equations[:pose][0] %>
 }
 
 void p1 (double * cl, double cpsi, double * cjoints, double * cp, int csoln) {
-	cp[1] = <%= equations[:pose][0][1] %>
+	cp[1] = <%= equations[:pose][1] %>
 }
 
 void p2 (double * cl, double cpsi, double * cjoints, double * cp, int csoln) {
-	cp[2] = <%= equations[:pose][0][2] %>
+	cp[2] = <%= equations[:pose][2] %>
 }
 
 void p3 (double * cl, double cpsi, double * cjoints, double * cp, int csoln) {
-	cp[3] = <%= equations[:pose][0][3] %>
+	cp[3] = <%= equations[:pose][3] %>
 }
 
 void v0 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cv, int csoln) {
-	cv[0] = <%= equations[:vel][0][0] %>
+	cv[0] = <%= equations[:vel][0] %>
 }
 
 void v1 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cv, int csoln) {
-	cv[1] = <%= equations[:vel][0][1] %>
+	cv[1] = <%= equations[:vel][1] %>
 }
 
 void v2 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cv, int csoln) {
-	cv[2] = <%= equations[:vel][0][2] %>
+	cv[2] = <%= equations[:vel][2] %>
 }
 
 void v3 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cv, int csoln) {
-	cv[3] = <%= equations[:vel][0][3] %>
+	cv[3] = <%= equations[:vel][3] %>
 }
 
-void a0 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * cv, int csoln) {
-	ca[0] = <%= equations[:acc][0][0] %>
+void a0 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * ca, int csoln) {
+	ca[0] = <%= equations[:acc][0] %>
 }
 
-void a1 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * cv, int csoln) {
-	ca[1] = <%= equations[:acc][0][1] %>
+void a1 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * ca, int csoln) {
+	ca[1] = <%= equations[:acc][1] %>
 }
 
-void a2 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * cv, int csoln) {
-	ca[2] = <%= equations[:acc][0][2] %>
+void a2 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * ca, int csoln) {
+	ca[2] = <%= equations[:acc][2] %>
 }
 
-void a3 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * cv, int csoln) {
-	ca[3] = <%= equations[:acc][0][3] %>
+void a3 (double * cl, double cpsi, double * cjoints, double * cvjoints, double * cajoints, double * ca, int csoln) {
+	ca[3] = <%= equations[:acc][3] %>
 }
 
-void vj0 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-          double * cvjoints, int csoln) {
+void vj0 (double * cl, double cpsi, double * cp, double * cv, double * cvjoints, 			  int csoln) {
 	cvjoints[0] = <%= equations[:vjoints][0][0] %>
 }
 
-void vj1 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-          double * cvjoints, int csoln) {
+void vj1 (double * cl, double cpsi, double * cp, double * cv, double * cvjoints, 			  int csoln) {
 	if (csoln == 0)
 		cvjoints[1] = <%= equations[:vjoints][0][1] %>
 	else
 		cvjoints[1] = <%= equations[:vjoints][1][1] %>
 }
 
-void vj2 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-          double * cvjoints, int csoln) {
+void vj2 (double * cl, double cpsi, double * cp, double * cv, double * cvjoints, 		  	  int csoln) {
 	if (csoln == 0)
 		cvjoints[2] = <%= equations[:vjoints][0][2] %>
 	else
 		cvjoints[2] = <%= equations[:vjoints][1][2] %>
 }
 
-void vj3 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-          double * cvjoints, int csoln) {
+void vj3 (double * cl, double cpsi, double * cp, double * cv, double * cvjoints, 			  int csoln) {
 	if (csoln == 0)
 		cvjoints[3] = <%= equations[:vjoints][0][3] %>
 	else
@@ -107,30 +103,18 @@ void aj3 (double * cl, double cpsi, double * cp, double * cv, double * ca,
 		cajoints[3] = <%= equations[:ajoints][1][3] %>
 }
 
-void t0 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-         double * cm, double ci[4][3], double * cmm, double * cjoints,
-         double * cvjoints,  double * cajoints, double * cRext, double * cText,
-         double * ctjoints) {
+void t0 (double * cl, double cpsi, double * cm, double ci[4][3], double * cmm, 			 double * cjoints, double * cvjoints,  double * cajoints, double * 	cRext, 			 double * cText, double * ctjoints) {
 	ctjoints[0] = <%= equations[:tjoints][0] %>
 }
 
-void t1 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-         double * cm, double ci[4][3], double * cmm, double * cjoints,
-         double * cvjoints,  double * cajoints, double * cRext, double * cText,
-         double * ctjoints) {
+void t1 (double * cl, double cpsi, double * cm, double ci[4][3], double * cmm, 			 double * cjoints, double * cvjoints,  double * cajoints, double * cRext, 			 double * cText, double * ctjoints) {
 	ctjoints[1] = <%= equations[:tjoints][1] %>
 }
 
-void t2 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-         double * cm, double ci[4][3], double * cmm, double * cjoints,
-         double * cvjoints,  double * cajoints, double * cRext, double * cText,
-         double * ctjoints) {
+void t2 (double * cl, double cpsi, double * cm, double ci[4][3], double * cmm, 			 double * cjoints, double * cvjoints,  double * cajoints, double * cRext, 			 double * cText, double * ctjoints) {
 	ctjoints[2] = <%= equations[:tjoints][2] %>
 }
 
-void t3 (double * cl, double cpsi, double * cp, double * cv, double * ca,
-         double * cm, double ci[4][3], double * cmm, double * cjoints,
-         double * cvjoints,  double * cajoints, double * cRext, double * cText,
-         double * ctjoints) {
+void t3 (double * cl, double cpsi, double * cm, double ci[4][3], double * cmm, 			 double * cjoints, double * cvjoints,  double * cajoints, double * cRext, 			 double * cText, double * ctjoints) {
 	ctjoints[3] = <%= equations[:tjoints][3] %>
 }
