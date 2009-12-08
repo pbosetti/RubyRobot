@@ -22,8 +22,6 @@ class PPOcubicspline
 		m    = Matrix.rows(crossjoints)
 		h    = Array.new(np+1)
 		tm   = Array.new(np+2)
-		a 	 = Array.new()
-		c	 = Array.new()
 		capp = Array.new(np)
 		q    = Array.new()
 		acc  = Array.new()
@@ -32,8 +30,13 @@ class PPOcubicspline
 		joints  = Array.new()
 	
 	optimized = false
-		
+	puts(" Step |  Torque 1   |   Torque 2   |  Torque 3   |  Torque 4\n")
+	puts("------------------------------------------------------------\n")
+	counter = 0	
 	while !optimized
+		a = Array.new()	
+		c = Array.new()		
+		counter += 1
 		h[0] = (m[1,4]-m[0,4])/2
 		h[1] = h[0]
 		for i in 1..np-3
@@ -110,9 +113,9 @@ class PPOcubicspline
  		l = Array.new()
  		t = Array.new()
  		
- 		kmax = ((tm[i+1]-tm[i])/tq).to_i
  		for n in 0..3
  			for i in 0..np
+		 		kmax = ((tm[i+1]-tm[i])/tq).to_i 			
  				for k in 0..kmax-1
  					t[k] = tm[i]+k*tq
  					j[k] = spline_pos(t[k],tm[i],tm[i+1],h[i],q[i][n],q[i+1][n],acc[n][i],acc[n][i+1])
@@ -132,11 +135,13 @@ class PPOcubicspline
  			r.ajoints = [vjoints[0][k],vjoints[1][k],vjoints[2][k],vjoints[3][k]]
  			tr = r.dynamics("j")
  			ta = r.tavail
+ 			dt = Array.new()
+ 			dv = Array.new()
  			[0,1,2,3].each do |i|
- 				dt = ta[i].abs - tr[i].abs
+ 				dt[i] = ta[i].abs - tr[i].abs
  			end
  			[0,1,2,3].each do |i|
- 				dv = r.vmax[i]-r.vjoints[i].abs
+ 				dv[i] = r.vmax[i]-r.vjoints[i].abs
  			end
  			if dt.min < 0 or dv.min < 0
  				optimized = false
@@ -150,12 +155,22 @@ class PPOcubicspline
  			i = 0
 			while k == 0
 				k = i if tm[i]-t > 0
+				i += 1
  			end
+ 			mat = m.to_a
  			for i in k..np-1
- 				m[i,4] += dT
+ 				mat[i][4] += dT
  			end
+ 			m = Matrix.rows(mat)
  		end
- 		puts m.to_a.inspect
+ 		#puts m.to_a.inspect
+ 		if counter < 10
+ 			printf("    %i | %f | %f | %f | %f\n",counter,tr[0],tr[1],tr[2],tr[3])
+ 		elsif counter < 100
+ 			printf("   %i | %f | %f | %f | %f\n",counter,tr[0],tr[1],tr[2],tr[3])
+ 		else
+ 			printf("  %i | %f | %f | %f | %f\n",counter,tr[0],tr[1],tr[2],tr[3])
+ 		end	
 	end
 	
 	cj = Array.new()

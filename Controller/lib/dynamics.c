@@ -17,7 +17,7 @@ void hset(hash *chash, char *key, double value)
  int found = 0;
  int i = 0;
  while (found == 0) {
- 	if (chash[i].key == key) {
+ 	if (chash[i].key[0] == key[0]) {
  		chash[i].value = value;
  		found = 1; }
  	else
@@ -92,7 +92,7 @@ void cartesian_position()
  double cp[4];
  p0(cl,cpsi,cjoints,cp,csoln);
  p1(cl,cpsi,cjoints,cp,csoln);
- p2(cl,cpsi,cjoints,cp,csoln);
+ p2(cl,cpsi,cjoints,cp,csoln); 
  p3(cl,cpsi,cjoints,cp,csoln);
  vector2hash(cp,cpose);
 }
@@ -185,19 +185,18 @@ static VALUE dynamics(VALUE self, VALUE type) {
     		var  = rb_iv_get(self,"@joints");
 		n = RARRAY(var)->len;
 	for (i=0;i<n;i++)
-		cjoints[i] = NUM2DBL(rb_ary_entry(var, i));		
+		cjoints[i] = NUM2DBL(rb_ary_entry(var, i));
+	var  = rb_iv_get(self,"@pose");
+	n = RHASH(var)->tbl->num_entries;
+	hash_converts(var, cpose, n);
+	var  = rb_iv_get(self,"@vel");
+	n = RHASH(var)->tbl->num_entries;
+	hash_converts(var, cvel, n);
+	var  = rb_iv_get(self,"@acc");
+	n = RHASH(var)->tbl->num_entries;
+	hash_converts(var, cacc, n);	
     if (ctype[0] == 'c') {
-    	printf("Calculate joint status\n");
-    	printf("--------------------------\n");
-		var  = rb_iv_get(self,"@pose");
-		n = RHASH(var)->tbl->num_entries;
-		hash_converts(var, cpose, n);
-		var  = rb_iv_get(self,"@vel");
-		n = RHASH(var)->tbl->num_entries;
-		hash_converts(var, cvel, n);
-		var  = rb_iv_get(self,"@acc");
-		n = RHASH(var)->tbl->num_entries;
-		hash_converts(var, cacc, n);
+    	//printf("Calculate joint status");
 		joints_velocity();
 		joints_acceleration();
 		joints_torque();
@@ -206,13 +205,13 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		for (i=0;i<n;i++)
 			rb_ary_store(var, i, rb_float_new(cvjoints[i]));
 	    rb_iv_set(self,"@vjoints", var);
+	    printf(".");
 		var = rb_ary_new2(n);
 		for (i=0;i<n;i++)
 			rb_ary_store(var, i, rb_float_new(cajoints[i]));
 		rb_iv_set(self,"@ajoints", var);}
 	else if (ctype[0] == 'j') {
-    	printf("Calculate end-effector status\n");
-    	printf("--------------------------\n");    	
+    	//printf("Calculate end-effector status");
 		var  = rb_iv_get(self,"@joints");
 		n = RARRAY(var)->len;
 		for (i=0;i<n;i++)
@@ -224,7 +223,7 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		var  = rb_iv_get(self,"@ajoints");
 		n = RARRAY(var)->len;
 		for (i=0;i<n;i++)
-			cajoints[i] = NUM2DBL(rb_ary_entry(var, i));
+			cajoints[i] = NUM2DBL(rb_ary_entry(var, i));	
 	    cartesian_position();
 	    cartesian_velocity();
 	    cartesian_acceleration();
@@ -242,6 +241,7 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		for (i=0;i<n;i++)
 			rb_hash_aset( var, ID2SYM(rb_intern(cacc[i].key)), rb_float_new(cacc[i].value) );
 		rb_iv_set(self,"@acc", var);
+		//printf("Cartesian value calculated.\n");
 		}
 	else
 		printf("The command \"%s\" doesn't exists\n",ctype);		
@@ -249,22 +249,22 @@ static VALUE dynamics(VALUE self, VALUE type) {
 	//		printf(":%s => %f\n",cvel[i].key,hget(cvel,cvel[i].key));
 	double cp[4], cv[4], ca[4];
 	hash2vector(cp,cv,ca);		
-    printf("Position: ");
-    printf("%f , %f , %f , %f \n",cp[0],cp[1],cp[2],cp[3]);
-    printf("Velocity: ");
-    printf("%f , %f , %f , %f \n",cv[0],cv[1],cv[2],cv[3]);
-    printf("Acceleration: ");    
-    printf("%f , %f , %f , %f \n\n",ca[0],ca[1],ca[2],ca[3]);
+    //printf("Position: ");
+    //printf("%f , %f , %f , %f \n",cp[0],cp[1],cp[2],cp[3]);
+    //printf("Velocity: ");
+    //printf("%f , %f , %f , %f \n",cv[0],cv[1],cv[2],cv[3]);
+    //printf("Acceleration: ");    
+    //printf("%f , %f , %f , %f \n\n",ca[0],ca[1],ca[2],ca[3]);
 
-    printf("Joints Position: ");
-    printf("%f , %f , %f , %f \n",cjoints[0],cjoints[1],cjoints[2],cjoints[3]);    
-    printf("Joints Velocity: ");
-    printf("%f , %f , %f , %f \n",cvjoints[0],cvjoints[1],cvjoints[2],cvjoints[3]);
-    printf("Joints Acceleration: ");    
-    printf("%f , %f , %f , %f \n",cajoints[0],cajoints[1],cajoints[2],cajoints[3]);
-	printf("Joints Torque: ");    
-    printf("%f , %f , %f , %f \n",ctjoints[0],ctjoints[1],ctjoints[2],ctjoints[3]);
-   	printf("--------------------------\n");
+    //printf("Joints Position: ");
+    //printf("%f , %f , %f , %f \n",cjoints[0],cjoints[1],cjoints[2],cjoints[3]);    
+    //printf("Joints Velocity: ");
+    //printf("%f , %f , %f , %f \n",cvjoints[0],cvjoints[1],cvjoints[2],cvjoints[3]);
+    //printf("Joints Acceleration: ");    
+    //printf("%f , %f , %f , %f \n",cajoints[0],cajoints[1],cajoints[2],cajoints[3]);
+	//printf("Joints Torque: ");    
+    //printf("%f , %f , %f , %f \n",ctjoints[0],ctjoints[1],ctjoints[2],ctjoints[3]);
+   	//printf("--------------------------\n");
 	var = rb_ary_new2(n);
 	for (i=0;i<n;i++)
 		rb_ary_store(var, i, rb_float_new(ctjoints[i]));
