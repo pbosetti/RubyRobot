@@ -148,7 +148,7 @@ void joints_torque()
 }
 
 static VALUE dynamics(VALUE self, VALUE type) {
-	printf("I");
+	//printf("I");
 	VALUE var;
 	int i;
 	ctype = RSTRING(type)->ptr;
@@ -187,7 +187,7 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		n = RARRAY(var)->len;
 	for (i=0;i<n;i++)
 		cjoints[i] = NUM2DBL(rb_ary_entry(var, i));
-	printf("-");	
+	//printf("-");	
 	var  = rb_iv_get(self,"@pose");
 	n = RHASH(var)->tbl->num_entries;
 	hash_converts(var, cpose, n);
@@ -214,7 +214,7 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		rb_iv_set(self,"@ajoints", var);}
 	else if (ctype[0] == 'j') {
     	//printf("Calculate end-effector status");
-    	printf("i");
+    	//printf("i");
 		var  = rb_iv_get(self,"@joints");
 		n = RARRAY(var)->len;
 		for (i=0;i<n;i++)
@@ -228,13 +228,13 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		for (i=0;i<n;i++)
 			cajoints[i] = NUM2DBL(rb_ary_entry(var, i));	
 	    cartesian_position();
-	    printf("P");
+	    //printf("P");
 	    cartesian_velocity();
-	    printf("V");	    
+	    //printf("V");	    
 	    cartesian_acceleration();
-	    printf("A");	    
+	    //printf("A");	    
 	    joints_torque();
-	    printf("T");	    
+	    //printf("T");	    
     	n = 4; 
 	    var = rb_hash_new();
     	for (i=0;i<n;i++)
@@ -252,12 +252,12 @@ static VALUE dynamics(VALUE self, VALUE type) {
 		}
 	else
 		printf("The command \"%s\" doesn't exists\n",ctype);		
-   	printf("f");		
+   	//printf("f");		
     //	for (i=0;i<n;i++)
 	//		printf(":%s => %f\n",cvel[i].key,hget(cvel,cvel[i].key));
 	double cp[4], cv[4], ca[4];
 	hash2vector(cp,cv,ca);
-	printf("-");	
+	//printf("-");	
     //printf("Position: ");
     //printf("%f , %f , %f , %f \n",cp[0],cp[1],cp[2],cp[3]);
     //printf("Velocity: ");
@@ -278,7 +278,7 @@ static VALUE dynamics(VALUE self, VALUE type) {
 	for (i=0;i<n;i++)
 		rb_ary_store(var, i, rb_float_new(ctjoints[i]));
 //	rb_iv_set(self,"@torque", var);
-    printf("F\n");
+    //printf("F\n");
     return var;
 }
 

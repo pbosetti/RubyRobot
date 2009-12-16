@@ -19,6 +19,7 @@ class PPOcubicspline
 			crossjoints << r.joints.push(cj)
 		end
 		np = crossjoints.length
+		puts np
 		m    = Matrix.rows(crossjoints)
 	
 	optimized = false
@@ -76,6 +77,7 @@ class PPOcubicspline
 		a = Matrix.rows(a)
 		
 		for i in 0..3
+			capp = Array.new()
 			capp[0] = 6.0*(m[1,i]/h[1]+m[0,i]/h[0])-6.0*(1/h[0]+1/h[1])*(m[0,i]+h[0]*vi[i]+h[0]**2/3.0*ai[i])-h[0]*ai[i]
 			capp[1] = 6.0/h[1]*(m[0,i]+h[0]*vi[i]+h[0]**2/3.0*ai[i])+6.0*m[2,i]/h[2]-6.0*(1/h[1]+1/h[2])*m[1,i]
 			for n in 2..np-3
@@ -87,18 +89,19 @@ class PPOcubicspline
 		end
 		c = Matrix.rows(c).transpose
 		f = (a.inv * c).to_a
- 		acc = [(f[0].insert(0,ai[0])).push(af[0]),
- 			   (f[1].insert(0,ai[1])).push(af[1]),
- 			   (f[2].insert(0,ai[2])).push(af[2]),
- 			   (f[3].insert(0,ai[3])).push(af[3])]
- 		vp1 = [vi[0]*h[0]+1/3.0*h[0]**2*ai[0]+1/6.0*h[0]**2*acc[0][1]+m[0,0],
+		acc = [ai]
+		for i in 0..np-1
+			acc.push f[i]
+		end
+		acc.push af	
+ 		vp1 = [vi[0]*h[0]+1/3.0*h[0]**2*ai[0]+1/6.0*h[0]**2*acc[1][0]+m[0,0],
  			   vi[1]*h[0]+1/3.0*h[0]**2*ai[1]+1/6.0*h[0]**2*acc[1][1]+m[0,1],
- 			   vi[2]*h[0]+1/3.0*h[0]**2*ai[2]+1/6.0*h[0]**2*acc[2][1]+m[0,2],
- 			   vi[3]*h[0]+1/3.0*h[0]**2*ai[3]+1/6.0*h[0]**2*acc[3][1]+m[0,3]]
- 		vp2 = [-vf[0]*h[np]+1/3.0*h[np]**2*af[0]+1/6.0*h[np]**2*acc[0][np]+m[np-1,0],
- 			   -vf[1]*h[np]+1/3.0*h[np]**2*af[1]+1/6.0*h[np]**2*acc[1][np]+m[np-1,1],
- 			   -vf[2]*h[np]+1/3.0*h[np]**2*af[2]+1/6.0*h[np]**2*acc[2][np]+m[np-1,2],
- 			   -vf[3]*h[np]+1/3.0*h[np]**2*af[3]+1/6.0*h[np]**2*acc[3][np]+m[np-1,3]]
+ 			   vi[2]*h[0]+1/3.0*h[0]**2*ai[2]+1/6.0*h[0]**2*acc[1][2]+m[0,2],
+ 			   vi[3]*h[0]+1/3.0*h[0]**2*ai[3]+1/6.0*h[0]**2*acc[1][3]+m[0,3]]
+ 		vp2 = [-vf[0]*h[np]+1/3.0*h[np]**2*af[0]+1/6.0*h[np]**2*acc[np][0]+m[np-1,0],
+ 			   -vf[1]*h[np]+1/3.0*h[np]**2*af[1]+1/6.0*h[np]**2*acc[np][1]+m[np-1,1],
+ 			   -vf[2]*h[np]+1/3.0*h[np]**2*af[2]+1/6.0*h[np]**2*acc[np][2]+m[np-1,2],
+ 			   -vf[3]*h[np]+1/3.0*h[np]**2*af[3]+1/6.0*h[np]**2*acc[np][3]+m[np-1,3]]
  		
  		q << m.row(0).to_a
  		q << vp1.push(tm[1])
@@ -109,22 +112,24 @@ class PPOcubicspline
  		q << m.row(np-1).to_a 		
  		
  		kmax = Array.new()
-
  		for n in 0..3
  			jc = 0 		
 	 		j = Array.new()
 			v = Array.new()
 	 		l = Array.new()
-	 		t = Array.new() 			
+	 		t = Array.new() 	
+	 		ktot = 0.0		
  			for i in 0..np
 		 		kmax[i] = ((tm[i+1]-tm[i])/tq).to_i
+		 		#kmax[i] +=1 if ((tm[i+1]-tm[i])%tq)!=0.0
  				for k in 0..kmax[i]-1
  					t[jc+k] = tm[i]+k*tq
- 					j[jc+k] = spline_pos(t[k],tm[i],tm[i+1],h[i],q[i][n],q[i+1][n],acc[n][i],acc[n][i+1])
+ 					j[jc+k] = spline_pos(t[jc+k],tm[i],tm[i+1],h[i],q[i][n],q[i+1][n],acc[i][n],acc[i+1][n])
  					#printf("j[%i] = %f\n",k+jc,spline_pos(t[k],tm[i],tm[i+1],h[i],q[i][n],q[i+1][n],acc[n][i],acc[n][i+1]))
  					#gets
- 					v[jc+k] = spline_vel(t[k],tm[i],tm[i+1],h[i],q[i][n],q[i+1][n],acc[n][i],acc[n][i+1])
- 					l[jc+k] = spline_acc(t[k],tm[i],tm[i+1],h[i],acc[n][i],acc[n][i+1])
+ 					v[jc+k] = spline_vel(t[jc+k],tm[i],tm[i+1],h[i],q[i][n],q[i+1][n],acc[i][n],acc[i+1][n])
+ 					l[jc+k] = spline_acc(t[jc+k],tm[i],tm[i+1],h[i],acc[i][n],acc[i+1][n])
+ 					ktot +=1.0
  				end
 		 		jc += kmax[i]
  			end		
@@ -133,27 +138,21 @@ class PPOcubicspline
  			ajoints << l
  		end
  		optimized = true
- 		ktot = 0
- 		for i in 0..kmax.length
- 			ktot += kmax[i].to_f
- 		end
  		k = 0
 		ta = r.tavail
  		while k <= ktot-1 and optimized == true
  			r.joints  = [joints[0][k],joints[1][k],joints[2][k],joints[3][k]]
  			r.vjoints = [vjoints[0][k],vjoints[1][k],vjoints[2][k],vjoints[3][k]]
  			r.ajoints = [ajoints[0][k],ajoints[1][k],ajoints[2][k],ajoints[3][k]]
-			#puts r.joints.inspect
-			#puts r.vjoints.inspect
-			#puts r.ajoints.inspect
-			#puts "-------------------------------------"
  			tr = r.dynamics("j")
- 			#sleep 0.1
  			dt = Array.new()
  			dv = Array.new()
  			[0,1,2,3].each do |i|
  				dt[i] = ta[i].abs - tr[i].abs
  			end
+			#puts r.joints.inspect
+			#puts r.vjoints.inspect
+			#puts r.ajoints.inspect 			
  			#puts tr.inspect
  			#puts ta.inspect
  			#gets
@@ -168,13 +167,13 @@ class PPOcubicspline
  			else
  				k += 1
  			end
- 		end
+ 		end	
  		if !optimized
  			ts = tm[0]+k*tq
  			k = 0
  			i = 0
 			while k == 0
-				k = i if tm[i]-ts > 0
+				k = i if m[i,4]-ts > 0.0	
 				i += 1
  			end
  			mat = m.to_a
@@ -183,25 +182,27 @@ class PPOcubicspline
  			end
  			m = Matrix.rows(mat)
  		end
+ 		#gets
+ 		#printf(" -- %i -- \n",counter) 		
+ 		#printf ("tempi = [%f,%f,%f,%f]\n",m[0,4],m[1,4],m[2,4],m[3,4])
  		#puts optimized.inspect
- 		printf(" -- %i -- \n",counter)
  		#puts h.inspect
  		#puts m.to_a.inspect
  		#gets
- 		#if counter < 10
- 		#	printf("    %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
- 		#elsif counter < 100
- 		#	printf("   %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
- 		#else
- 		#	printf("  %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
- 		#end	
+ 		if counter < 10
+ 			printf("    %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
+ 		elsif counter < 100
+ 			printf("   %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
+ 		else
+ 			printf("  %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
+ 		end	
 	end
 	
 	cj = Array.new()
 	for k in 0..ktot-1
 		cj << {:time => t[k], :joints => [joints[0][k],joints[1][k],joints[2][k],joints[3][k]]}
 	end
-	puts cj.inspect
+	#puts cj.inspect
 	return cj
 end
 

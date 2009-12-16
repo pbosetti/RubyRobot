@@ -18,9 +18,9 @@ config = {
   :tmax => [2.5, 2.5, 0.53955, 0.53955], # inserire parametri caratterizzazione   
   :m => [0.7550, 0.0660, 0.0660, 0.0660],
   :inertia => [[0.0019, 0.0030, 0.0030],  # Ix1, Iy1, Iz1
-			   [0.0, 0.0, 0.0014],  # Ix2, Iy2, Iz2
-			   [0.0, 0.0, 0.0014],  # Ix3, Iy3, Iz3
-			   [0.0, 0.0, 0.0014]], # Ix4, Iy4, Iz4
+  			   [0.0, 0.0, 0.0014],  # Ix2, Iy2, Iz2
+  			   [0.0, 0.0, 0.0014],  # Ix3, Iy3, Iz3
+  			   [0.0, 0.0, 0.0014]], # Ix4, Iy4, Iz4
   :mm => [0.2, 0.2, 0.15, 0.10],
   :Rext => [0.0, 0.0, 0.0, 0.0],
   :Text => [0.0, 0.0, 0.0, 0.0]  
@@ -32,8 +32,8 @@ ai = [0,0,0,0]
 af = [0,0,0,0]
 vi = [0,0,0,0]
 vf = [0,0,0,0]
-tq = 0.01
-dT = 0.01
+tq = 0.05
+dT = 0.05
 filename = "optimizerpoints.yaml"
 crossjoints = PPOcubicspline.new(r,filename,vi,ai,vf,af,tq,dT)
 #r.dynamics("c")
