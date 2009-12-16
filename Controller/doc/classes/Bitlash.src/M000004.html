@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>new (Bitlash)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/rubitlash.rb, line 28</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">port_addr</span>, <span class="ruby-identifier">baud</span>=<span class="ruby-value">57600</span>, <span class="ruby-identifier">verbose</span>=<span class="ruby-keyword kw">false</span>, <span class="ruby-identifier">name</span>=<span class="ruby-node">&quot;Bitflash##{(rand*1000).to_i}&quot;</span>)
+    <span class="ruby-ivar">@port_addr</span>, <span class="ruby-ivar">@baud</span>, <span class="ruby-ivar">@name</span> = <span class="ruby-identifier">port_addr</span>, <span class="ruby-identifier">baud</span>, <span class="ruby-identifier">name</span>
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">verbose</span> = <span class="ruby-identifier">verbose</span>
+    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">open</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

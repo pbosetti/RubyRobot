@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>new (CoordinateSystem::CartesianAxis)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/coordinatesystem.rb, line 86</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span> (<span class="ruby-identifier">p0</span>,<span class="ruby-identifier">p1</span>,<span class="ruby-identifier">p2</span>)
+                <span class="ruby-ivar">@p0</span> = <span class="ruby-identifier">p0</span>
+                <span class="ruby-identifier">plane</span> = <span class="ruby-constant">Plane</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">p0</span>,<span class="ruby-identifier">p1</span>,<span class="ruby-identifier">p2</span>)
+                <span class="ruby-ivar">@vx</span> = (<span class="ruby-identifier">p1</span><span class="ruby-operator">-</span><span class="ruby-identifier">p0</span>).<span class="ruby-identifier">normalize</span>
+                <span class="ruby-ivar">@vz</span> = <span class="ruby-identifier">plane</span>.<span class="ruby-identifier">ortho_vector</span>(<span class="ruby-identifier">p0</span>)
+                <span class="ruby-ivar">@vy</span> = <span class="ruby-constant">Point</span>.<span class="ruby-identifier">new</span>([<span class="ruby-ivar">@vx</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@vz</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">-</span><span class="ruby-ivar">@vx</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@vz</span>[<span class="ruby-value">2</span>] , <span class="ruby-ivar">@vx</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@vz</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">-</span><span class="ruby-ivar">@vz</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@vx</span>[<span class="ruby-value">2</span>] , <span class="ruby-ivar">@vz</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@vx</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">-</span><span class="ruby-ivar">@vx</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@vz</span>[<span class="ruby-value">1</span>]]).<span class="ruby-identifier">normalize</span>
+                <span class="ruby-ivar">@rtm</span> = <span class="ruby-constant">Matrix</span>.<span class="ruby-identifier">columns</span> [<span class="ruby-ivar">@vx</span>.<span class="ruby-identifier">push</span>(<span class="ruby-value">0</span>),<span class="ruby-ivar">@vy</span>.<span class="ruby-identifier">push</span>(<span class="ruby-value">0</span>),<span class="ruby-ivar">@vz</span>.<span class="ruby-identifier">push</span>(<span class="ruby-value">0</span>),<span class="ruby-ivar">@p0</span>.<span class="ruby-identifier">push</span>(<span class="ruby-value">1</span>)]
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

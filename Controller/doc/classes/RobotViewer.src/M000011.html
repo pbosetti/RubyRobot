@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>motion (RobotViewer)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 233</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">motion</span>
+    <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">x</span>, <span class="ruby-identifier">y</span><span class="ruby-operator">|</span>
+      <span class="ruby-keyword kw">if</span> (<span class="ruby-ivar">@x_last</span> <span class="ruby-operator">!=</span> <span class="ruby-value">-1</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@y_last</span> <span class="ruby-operator">!=</span> <span class="ruby-value">-1</span>)
+        <span class="ruby-ivar">@x_incr</span> = <span class="ruby-identifier">x</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@x_last</span>
+        <span class="ruby-ivar">@y_incr</span> = <span class="ruby-identifier">y</span> <span class="ruby-operator">-</span> <span class="ruby-ivar">@y_last</span>
+        <span class="ruby-keyword kw">if</span> (<span class="ruby-ivar">@modifiers</span> <span class="ruby-operator">&amp;</span> <span class="ruby-constant">GLUT_ACTIVE_CTRL</span> <span class="ruby-operator">!=</span> <span class="ruby-value">0</span>)
+          <span class="ruby-keyword kw">if</span> (<span class="ruby-ivar">@x_last</span> <span class="ruby-operator">!=</span> <span class="ruby-value">-1</span>)
+            <span class="ruby-ivar">@scale_factor</span> <span class="ruby-operator">+=</span> <span class="ruby-ivar">@y_incr</span> <span class="ruby-operator">*</span> <span class="ruby-constant">SCALE_FACTOR</span>
+            <span class="ruby-ivar">@scale_factor</span> = <span class="ruby-ivar">@scale_factor</span>.<span class="ruby-identifier">abs</span>
+            <span class="ruby-ivar">@x_pan</span> = <span class="ruby-ivar">@y_pan</span> = <span class="ruby-value">0</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">elsif</span> (<span class="ruby-ivar">@modifiers</span> <span class="ruby-operator">&amp;</span> <span class="ruby-constant">GLUT_ACTIVE_SHIFT</span> <span class="ruby-operator">!=</span> <span class="ruby-value">0</span>)
+          <span class="ruby-keyword kw">if</span> (<span class="ruby-ivar">@x_last</span> <span class="ruby-operator">!=</span> <span class="ruby-value">-1</span>)
+            <span class="ruby-ivar">@x_pan</span> = <span class="ruby-ivar">@x_incr</span><span class="ruby-operator">*</span><span class="ruby-value">2.5</span>
+            <span class="ruby-ivar">@y_pan</span> = <span class="ruby-operator">-</span><span class="ruby-ivar">@y_incr</span><span class="ruby-operator">*</span><span class="ruby-value">2.5</span>
+            <span class="ruby-identifier">glMatrixMode</span>(<span class="ruby-constant">GL_PROJECTION</span>)
+            <span class="ruby-identifier">glTranslate</span>(<span class="ruby-ivar">@x_pan</span>, <span class="ruby-ivar">@y_pan</span>, <span class="ruby-value">0</span><span class="ruby-value">.0</span>)
+            <span class="ruby-identifier">glMatrixMode</span>(<span class="ruby-constant">GL_MODELVIEW</span>)
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">else</span>
+          <span class="ruby-keyword kw">if</span> (<span class="ruby-ivar">@x_last</span> <span class="ruby-operator">!=</span> <span class="ruby-value">-1</span>)
+            <span class="ruby-ivar">@x_rot</span> <span class="ruby-operator">+=</span> <span class="ruby-ivar">@y_incr</span>
+            <span class="ruby-ivar">@y_rot</span> <span class="ruby-operator">+=</span> <span class="ruby-ivar">@x_incr</span>
+            <span class="ruby-ivar">@x_pan</span> = <span class="ruby-ivar">@y_pan</span> = <span class="ruby-value">0</span>
+          <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-ivar">@x_last</span> = <span class="ruby-identifier">x</span>
+      <span class="ruby-ivar">@y_last</span> = <span class="ruby-identifier">y</span>
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>ik (InverseKinematicsAndDynamics::Puma560)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/ik.rb, line 58</span>
+   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ik</span>(<span class="ruby-identifier">pose</span>=<span class="ruby-ivar">@pose</span>)
+      <span class="ruby-identifier">theta</span> = <span class="ruby-identifier">atan2</span>(<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:y</span>],<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:x</span>])
+      <span class="ruby-identifier">r</span>     = <span class="ruby-identifier">sqrt</span>(<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:x</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span><span class="ruby-operator">+</span><span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:y</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span>)
+      <span class="ruby-identifier">sol</span> = [<span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">4</span>,<span class="ruby-value">0</span>), <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">4</span>,<span class="ruby-value">0</span>)]
+      <span class="ruby-identifier">sphi</span> = <span class="ruby-identifier">sin</span>(<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:phi</span>])
+      <span class="ruby-identifier">cphi</span> = <span class="ruby-identifier">cos</span>(<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:phi</span>])
+      <span class="ruby-ivar">@wrist</span> = [<span class="ruby-identifier">r</span><span class="ruby-operator">-</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">3</span>]<span class="ruby-operator">*</span><span class="ruby-identifier">cphi</span>, <span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:z</span>]<span class="ruby-operator">-</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">-</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">3</span>]<span class="ruby-operator">*</span><span class="ruby-identifier">sphi</span>]
+      <span class="ruby-identifier">c2</span> = (<span class="ruby-ivar">@wrist</span>[<span class="ruby-value">0</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span><span class="ruby-operator">+</span><span class="ruby-ivar">@wrist</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span><span class="ruby-operator">-</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span><span class="ruby-operator">-</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span>)<span class="ruby-operator">/</span>(<span class="ruby-value">2</span><span class="ruby-operator">*</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">*</span><span class="ruby-ivar">@l</span>[<span class="ruby-value">2</span>])
+      <span class="ruby-identifier">s2</span> = <span class="ruby-identifier">sqrt</span>(<span class="ruby-value">1</span><span class="ruby-operator">-</span><span class="ruby-identifier">c2</span><span class="ruby-operator">**</span><span class="ruby-value">2</span>)
+      <span class="ruby-identifier">k1</span> = <span class="ruby-ivar">@l</span>[<span class="ruby-value">1</span>] <span class="ruby-operator">+</span> <span class="ruby-ivar">@l</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">*</span><span class="ruby-identifier">c2</span>
+      <span class="ruby-identifier">k2</span> = <span class="ruby-ivar">@l</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">*</span><span class="ruby-identifier">s2</span>
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">0</span>] = <span class="ruby-identifier">theta</span>
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-value">0</span>] = <span class="ruby-identifier">theta</span>
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">1</span>] = <span class="ruby-identifier">atan2</span>(<span class="ruby-ivar">@wrist</span>[<span class="ruby-value">1</span>], <span class="ruby-ivar">@wrist</span>[<span class="ruby-value">0</span>]) <span class="ruby-operator">-</span> <span class="ruby-identifier">atan2</span>(<span class="ruby-identifier">k2</span>, <span class="ruby-identifier">k1</span>)
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-value">1</span>] = <span class="ruby-identifier">atan2</span>(<span class="ruby-ivar">@wrist</span>[<span class="ruby-value">1</span>], <span class="ruby-ivar">@wrist</span>[<span class="ruby-value">0</span>]) <span class="ruby-operator">-</span> <span class="ruby-identifier">atan2</span>(<span class="ruby-operator">-</span><span class="ruby-identifier">k2</span>, <span class="ruby-identifier">k1</span>)
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">2</span>] = <span class="ruby-identifier">atan2</span>(<span class="ruby-identifier">s2</span>,<span class="ruby-identifier">c2</span>)
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-value">2</span>] = <span class="ruby-operator">-</span><span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">2</span>]
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">3</span>] = <span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:phi</span>] <span class="ruby-operator">-</span> (<span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">1</span>] <span class="ruby-operator">+</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-value">2</span>])
+      <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-value">3</span>] = <span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:phi</span>] <span class="ruby-operator">-</span> (<span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-value">1</span>] <span class="ruby-operator">+</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-value">2</span>])
+      <span class="ruby-identifier">cumError</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">2</span>,<span class="ruby-value">0</span><span class="ruby-value">.0</span>);
+      [<span class="ruby-value">0</span>,<span class="ruby-value">1</span>,<span class="ruby-value">2</span>,<span class="ruby-value">3</span>].<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">i</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">cumError</span>[<span class="ruby-value">0</span>] <span class="ruby-operator">+=</span> (<span class="ruby-ivar">@joints</span>[<span class="ruby-identifier">i</span>]<span class="ruby-operator">-</span><span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>][<span class="ruby-identifier">i</span>])<span class="ruby-operator">**</span><span class="ruby-value">2</span>
+        <span class="ruby-identifier">cumError</span>[<span class="ruby-value">1</span>] <span class="ruby-operator">+=</span> (<span class="ruby-ivar">@joints</span>[<span class="ruby-identifier">i</span>]<span class="ruby-operator">-</span><span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-identifier">i</span>])<span class="ruby-operator">**</span><span class="ruby-value">2</span>         
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cumError</span>[<span class="ruby-value">1</span>] <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">cumError</span>[<span class="ruby-value">0</span>]
+        <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">inlimits?</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>]
+                <span class="ruby-ivar">@joints</span> = <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>]
+                <span class="ruby-ivar">@pose</span> = <span class="ruby-identifier">pose</span>
+                <span class="ruby-ivar">@soln</span> = <span class="ruby-value">0</span>
+                <span class="ruby-keyword kw">return</span> <span class="ruby-value">1</span>
+        <span class="ruby-keyword kw">else</span>
+                <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>
+        <span class="ruby-keyword kw">end</span>      
+      <span class="ruby-keyword kw">else</span>      
+        <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">inlimits?</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>]
+                <span class="ruby-ivar">@joints</span> = <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>]
+                <span class="ruby-ivar">@pose</span> = <span class="ruby-identifier">pose</span>                    
+                <span class="ruby-ivar">@soln</span> = <span class="ruby-value">0</span>
+                <span class="ruby-keyword kw">return</span> <span class="ruby-value">1</span>
+        <span class="ruby-keyword kw">else</span>             
+                <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>
+        <span class="ruby-keyword kw">end</span>
+      <span class="ruby-keyword kw">end</span>       
+          
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

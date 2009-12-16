@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>get_rtm (Arduino::Controller)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/arduino.rb, line 77</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_rtm</span> (<span class="ruby-identifier">r</span>,<span class="ruby-identifier">target</span>,<span class="ruby-identifier">v</span>)
+                <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">puts</span> <span class="ruby-value str">&quot;M&quot;</span>
+                <span class="ruby-identifier">first_time_click</span> = <span class="ruby-value">0</span><span class="ruby-value">.0</span>
+                <span class="ruby-identifier">running</span> = <span class="ruby-keyword kw">true</span>
+                <span class="ruby-identifier">line</span> = [<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>]
+                <span class="ruby-identifier">now</span> = <span class="ruby-identifier">last_click</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>.<span class="ruby-identifier">to_f</span>
+                <span class="ruby-identifier">p</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">0</span>)
+                <span class="ruby-keyword kw">while</span> <span class="ruby-identifier">running</span>
+                        <span class="ruby-identifier">line</span> = <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">gets</span>.<span class="ruby-identifier">split</span>
+                        <span class="ruby-identifier">line</span> = <span class="ruby-identifier">line</span>.<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">to_i</span>}
+                        <span class="ruby-identifier">rebound</span> = (<span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>.<span class="ruby-identifier">to_f</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">last_click</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">1</span>)
+                        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">line</span>
+                                <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:x</span>] <span class="ruby-operator">-=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">/</span><span class="ruby-value">100.0</span>
+                             <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:y</span>] <span class="ruby-operator">+=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">/</span><span class="ruby-value">100.0</span>
+                             <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:z</span>] <span class="ruby-operator">+=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">3</span>]<span class="ruby-operator">/</span><span class="ruby-value">100.0</span>
+                                <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:phi</span>] <span class="ruby-operator">+=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">4</span>]<span class="ruby-operator">/</span><span class="ruby-value">5000.0</span>
+                                <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">r</span>.<span class="ruby-identifier">ik</span>(<span class="ruby-identifier">target</span>)
+                                        <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:x</span>] <span class="ruby-operator">+=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">1</span>]<span class="ruby-operator">/</span><span class="ruby-value">100.0</span>
+                                     <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:y</span>] <span class="ruby-operator">-=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">2</span>]<span class="ruby-operator">/</span><span class="ruby-value">100.0</span>
+                                     <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:z</span>] <span class="ruby-operator">-=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">3</span>]<span class="ruby-operator">/</span><span class="ruby-value">100.0</span>
+                                        <span class="ruby-identifier">target</span>[<span class="ruby-identifier">:phi</span>] <span class="ruby-operator">-=</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">4</span>]<span class="ruby-operator">/</span><span class="ruby-value">5000.0</span>
+                                <span class="ruby-keyword kw">end</span>
+                        <span class="ruby-keyword kw">end</span>
+                        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">line</span>[<span class="ruby-value">0</span>] <span class="ruby-operator">==</span> <span class="ruby-value">1</span> <span class="ruby-keyword kw">and</span> <span class="ruby-operator">!</span> <span class="ruby-identifier">rebound</span>
+                                <span class="ruby-constant">STDOUT</span>.<span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;Point n°&quot;</span>
+                                <span class="ruby-constant">STDOUT</span>.<span class="ruby-identifier">print</span> <span class="ruby-identifier">p</span>.<span class="ruby-identifier">length</span><span class="ruby-operator">+</span><span class="ruby-value">1</span>
+                                <span class="ruby-constant">STDOUT</span>.<span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;: &quot;</span>
+                                <span class="ruby-constant">STDOUT</span>.<span class="ruby-identifier">print</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">joints</span>, <span class="ruby-value str">&quot; &quot;</span>
+                                <span class="ruby-constant">STDOUT</span>.<span class="ruby-identifier">puts</span>
+                                <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">first_time_click</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span><span class="ruby-value">.0</span>
+                                        <span class="ruby-identifier">first_time_click</span> =<span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>.<span class="ruby-identifier">to_f</span>
+                                        <span class="ruby-identifier">p</span>[<span class="ruby-value">0</span>] = <span class="ruby-constant">Point</span>.<span class="ruby-identifier">new</span>([<span class="ruby-identifier">target</span>[<span class="ruby-identifier">:x</span>],<span class="ruby-identifier">target</span>[<span class="ruby-identifier">:y</span>],<span class="ruby-identifier">target</span>[<span class="ruby-identifier">:z</span>]])
+                                        <span class="ruby-identifier">last_click</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>.<span class="ruby-identifier">to_f</span>
+                                <span class="ruby-keyword kw">else</span>
+                                        <span class="ruby-identifier">p</span>.<span class="ruby-identifier">push</span> <span class="ruby-constant">Point</span>.<span class="ruby-identifier">new</span>([<span class="ruby-identifier">target</span>[<span class="ruby-identifier">:x</span>],<span class="ruby-identifier">target</span>[<span class="ruby-identifier">:y</span>],<span class="ruby-identifier">target</span>[<span class="ruby-identifier">:z</span>]])
+                                        <span class="ruby-identifier">last_click</span> = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span>.<span class="ruby-identifier">to_f</span>
+                                        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">p</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">==</span> <span class="ruby-value">3</span>
+                                        <span class="ruby-comment cmt"># cs.rtm is the Roto-Traslation matrix of this Coordinate System</span>
+                                                <span class="ruby-identifier">cs</span> = <span class="ruby-constant">CartesianAxis</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">p</span>[<span class="ruby-value">0</span>],<span class="ruby-identifier">p</span>[<span class="ruby-value">1</span>],<span class="ruby-identifier">p</span>[<span class="ruby-value">2</span>])
+                                                <span class="ruby-identifier">rtm</span> = <span class="ruby-identifier">cs</span>.<span class="ruby-identifier">rtm</span>
+                                                <span class="ruby-identifier">running</span> = <span class="ruby-keyword kw">false</span>
+                                        <span class="ruby-keyword kw">end</span>        
+                                <span class="ruby-keyword kw">end</span> 
+                        <span class="ruby-keyword kw">end</span>
+                        <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">update_sim</span>(<span class="ruby-identifier">r</span>,<span class="ruby-identifier">v</span>)
+                <span class="ruby-keyword kw">end</span>   
+                <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">rtm</span>
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

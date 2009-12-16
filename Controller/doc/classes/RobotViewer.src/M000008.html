@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>reshape (RobotViewer)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 174</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">reshape</span>
+    <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">w</span>,<span class="ruby-identifier">h</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">glViewport</span>(<span class="ruby-value">0</span>, <span class="ruby-value">0</span>,  <span class="ruby-identifier">w</span>,  <span class="ruby-identifier">h</span>) 
+      <span class="ruby-identifier">glMatrixMode</span>(<span class="ruby-constant">GL_PROJECTION</span>)
+      <span class="ruby-identifier">glLoadIdentity</span>()
+      <span class="ruby-identifier">gluPerspective</span>(<span class="ruby-value">65.0</span>,  <span class="ruby-identifier">w</span><span class="ruby-operator">/</span> <span class="ruby-identifier">h</span>, <span class="ruby-value">100.0</span>, <span class="ruby-value">5000.0</span>)
+      <span class="ruby-identifier">glMatrixMode</span>(<span class="ruby-constant">GL_MODELVIEW</span>)
+      <span class="ruby-identifier">glLoadIdentity</span>()
+      <span class="ruby-identifier">glTranslate</span>(<span class="ruby-value">0</span>, <span class="ruby-value">0</span>, <span class="ruby-value">-1200</span>)
+      <span class="ruby-ivar">@w</span>, <span class="ruby-ivar">@h</span> = <span class="ruby-identifier">glutGet</span>(<span class="ruby-constant">GLUT_WINDOW_WIDTH</span>), <span class="ruby-identifier">glutGet</span>(<span class="ruby-constant">GLUT_WINDOW_HEIGHT</span>)
+    <span class="ruby-keyword kw">end</span>
+  <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

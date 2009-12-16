@@ -184,9 +184,9 @@ class PPOcubicspline
  			m = Matrix.rows(mat)
  		end
  		#puts optimized.inspect
- 		#printf(" -- %i -- \n",counter)
- 		puts h.inspect
- 		puts m.to_a.inspect
+ 		printf(" -- %i -- \n",counter)
+ 		#puts h.inspect
+ 		#puts m.to_a.inspect
  		#gets
  		#if counter < 10
  		#	printf("    %i | %i | %f | %f | %f | %f\n",counter,k,tr[0].abs,tr[1].abs,tr[2].abs,tr[3].abs)
