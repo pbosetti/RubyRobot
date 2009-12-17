@@ -8,7 +8,7 @@
 #include "dyneqns.h"
 
 typedef struct hash {
-	char * key;
+	char   key[10] ;
 	double value;
 } hash;
 
@@ -45,7 +45,8 @@ void hash_converts(VALUE rubyhash, hash *chash, int n)
 	VALUE keys   = rb_funcall( rubyhash, rb_intern( "keys" ), 0 );	
 	for (i=0;i<n;i++) {
 		VALUE string = rb_funcall(rb_ary_entry(keys, i),rb_intern( "to_s" ), 0 );
-		chash[i].key   = rb_string_value_cstr(&string);
+		char *str = rb_string_value_cstr(&string);
+		strncpy(chash[i].key,str,10) ;
 		chash[i].value = NUM2DBL(rb_ary_entry(values, i));			
 	}
 }
@@ -159,7 +160,7 @@ static VALUE dynamics(VALUE self, VALUE type) {
     var = rb_iv_get(self,"@psi");
     cpsi = NUM2DBL(var);
     //printf("cpsi = %f\n",cpsi);
-     var  = rb_iv_get(self,"@m");
+    var  = rb_iv_get(self,"@m");
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
     	cm[i] = NUM2DBL(rb_ary_entry(var, i));
@@ -179,12 +180,12 @@ static VALUE dynamics(VALUE self, VALUE type) {
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
     	cRext[i] = NUM2DBL(rb_ary_entry(var, i));
-    	var  = rb_iv_get(self,"@Text");
+    var  = rb_iv_get(self,"@Text");
     n = RARRAY(var)->len;
     for (i=0;i<n;i++)
     	cText[i] = NUM2DBL(rb_ary_entry(var, i));
-    		var  = rb_iv_get(self,"@joints");
-		n = RARRAY(var)->len;
+    var  = rb_iv_get(self,"@joints");
+	n = RARRAY(var)->len;
 	for (i=0;i<n;i++)
 		cjoints[i] = NUM2DBL(rb_ary_entry(var, i));
 	//printf("-");	

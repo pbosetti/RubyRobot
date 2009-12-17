@@ -33,7 +33,7 @@ af = [0,0,0,0]
 vi = [0,0,0,0]
 vf = [0,0,0,0]
 tq = 0.05
-dT = 0.05
+dT = 0.02
 filename = "optimizerpoints.yaml"
 crossjoints = PPOcubicspline.new(r,filename,vi,ai,vf,af,tq,dT)
 #r.dynamics("c")

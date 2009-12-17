@@ -203,7 +203,8 @@ class PPOcubicspline
 		cj << {:time => t[k], :joints => [joints[0][k],joints[1][k],joints[2][k],joints[3][k]]}
 	end
 	#puts cj.inspect
-	return cj
+	#return cj
+	File.open("optimizedpoints.yaml", "w") {|f| YAML.dump(cj, f)}
 end
 
 private
