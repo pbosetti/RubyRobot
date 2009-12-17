@@ -33,13 +33,13 @@ int length = 4;
 byte incoming;
 float offset[4] = {0.5*PI, 0.5*PI, 0.5*PI, 0.5*PI};
 float increase[4] = {0.0, 0.0, 0.0, 0.0};
-float coords[4] = {100.0, 100.0, -10.0, -0.5*PI};
+float coords[4] = {0.25, 0.25, -0.25, -0.5*PI};
 //float minlimits[4] = {-90.0/180*PI,0.0,-90.0/180*PI,-90.0/180*PI};
 float minlimits[4] = {-180.0/180*PI,-90.0/180*PI,-180.0/180*PI,-180.0/180*PI};
 //float maxlimits[4] = {90.0/180*PI,85.0/180*PI,90.0/180*PI,90.0/180*PI};
 float maxlimits[4] = {180.0/180*PI,90.0/180*PI,180.0/180*PI,180.0/180*PI};
 float joints[4] = {0.0, 0.0, 0.0, 0.0};
-float l[4]      = {0.0, 100.0, 100.0, 10.0};
+float l[4]      = {0.0, 0.25, 0.25, 0.25};
 
 SLCD lcd = SLCD(numRows, numCols);
 MegaServo Servos[NBR_SERVOS];

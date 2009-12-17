@@ -50,6 +50,7 @@ STDOUT.sync = true
 
 shape = nil
 datacapture = false
+automatic = true
 filename = ""
 basicShape.each do |key,val|
 	if ARGV.include? val
@@ -64,6 +65,7 @@ end
 
 if !shape and ARGV.include? "-datacapture"
 	datacapture = true
+	automatic = false
 end
 
 ARGV.each do |v|
@@ -73,7 +75,7 @@ end
 # End parsing
 
 config = {
-  :l => [0.0, 100.0,100.0, 10.0],
+  :l => [0.25, 0.25 ,0.25, 0.25],
   :home => [  0.0,  0.0,  0.0],
   :limits => [
     -180.0.to_rad..180.0.to_rad,
@@ -82,25 +84,25 @@ config = {
     -180.0.to_rad..180.0.to_rad
   ],
   :psi => -90.0.to_rad,
-  :vmax => [0.0, 0.0, 0.0, 0.0], # inserire parametri caratterizzazione
-  :tmax => [0.0, 0.0, 0.0, 0.0], # inserire parametri caratterizzazione
-  :servopar => {:m => [], :q => [] }  
-  :m => [0.0, 0.0, 0.0, 0.0],
-  :inertia => [[0.0, 0.0, 0.0],  # Ix1, Iy1, Iz1
-			   [0.0, 0.0, 0.0],  # Ix2, Iy2, Iz2
-			   [0.0, 0.0, 0.0],  # Ix3, Iy3, Iz3
-			   [0.0, 0.0, 0.0]], # Ix4, Iy4, Iz4
-  :mm => [0.0, 0.0, 0.0, 0.0],
+  :vmax => [6.977393246, 6.977393246, 8.716478191, 8.716478191], # inserire parametri caratterizzazione
+  :tmax => [2.5, 2.5, 0.53955, 0.53955], # inserire parametri caratterizzazione   
+  :m => [0.7550, 0.0660, 0.0660, 0.0660],
+  :inertia => [[0.0019, 0.0030, 0.0030],  # Ix1, Iy1, Iz1
+  			   [0.0, 0.0, 0.0014],  # Ix2, Iy2, Iz2
+  			   [0.0, 0.0, 0.0014],  # Ix3, Iy3, Iz3
+  			   [0.0, 0.0, 0.0014]], # Ix4, Iy4, Iz4
+  :mm => [0.2, 0.2, 0.15, 0.10],
   :Rext => [0.0, 0.0, 0.0, 0.0],
   :Text => [0.0, 0.0, 0.0, 0.0]  
 }
 r = Puma560.new(config)
 
-target = {:x=>100.0, :y => 100.0, :z => -10.0, :phi => -90.0.to_rad}
+target = {:x=>0.25, :y => 0.25, :z => -0.25, :phi => -90.0.to_rad}
 r.ik(target)
 joints = r.joints.map {|v| v.to_deg}
 
 v = RobotViewer.new
+
 v.bodies << BoxBody.new(
   :l => 0, 
   :a => 0, 
@@ -110,19 +112,19 @@ v.bodies << BoxBody.new(
   :color => [1,1,1,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a => 100, 
+  :a => r.l[1]*300, 
   :theta => joints[1], 
   :alpha => 0.0,
   :color => [1.0,0.8,0.8,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a =>100, 
+  :a =>r.l[2]*300, 
   :theta => joints[2], 
   :alpha => 0.0, 
   :color => [0.8,1.0,0.8,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a =>10,
+  :a =>r.l[3]*300,
   :w => 2, 
   :theta => joints[3], 
   :alpha => 0.0, 
@@ -189,12 +191,12 @@ elsif shape != nil
 	resp = STDIN.gets.chomp
 end
 
-if resp == "y"
+if resp == "y" or automatic
 	filename = "crosspoints.yaml" if filename == ""
 	arduino.automatic_mode(r,v,filename)
 end
 
-server_thread.join
+#server_thread.join
 server_thread.kill
 arduino.puts "M"
 puts "Program ended - Click ENTER to exit"

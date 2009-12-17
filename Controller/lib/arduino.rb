@@ -125,15 +125,17 @@ class Controller < SerialPort
 	
 	def automatic_mode(r,v,filename)
 		self.puts "A" # AUTOMATIC MODE
-		#crossjoints = YAML::load_file("crossjoints.yaml")
-		crosspoints = YAML::load_file(filename)
-		crossjoints = Array.new(0,Hash.new)
-		crosspoints.each do |cp|
-			cj = {:time=> cp.delete(:time)}
-		  	puts "Out of range!" if !r.ik(cp)
-			crossjoints << cj.merge({:joints => r.joints})
-		end
-
+		crossjoints = YAML::load_file(filename)
+		#crosspoints = YAML::load_file(filename)
+		#crossjoints = Array.new(0,Hash.new)
+		#crosspoints.each do |cp|
+		#	cj = {:time=> cp.delete(:time)}
+		#  	puts "Out of range!" if !r.ik(cp)
+		#	crossjoints << cj.merge({:joints => r.joints})
+		#end
+		puts filename.inspect
+		puts crossjoints.inspect
+		gets
 		last_time = 0.0
 		crossjoints.each do |cj|
 			v.bodies.each_with_index do |b, i|
@@ -142,6 +144,7 @@ class Controller < SerialPort
 			sleep cj[:time]-last_time
 			last_time = cj[:time]
 		end
+		self.puts "M"
 	end
 
 private
