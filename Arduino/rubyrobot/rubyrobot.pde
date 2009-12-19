@@ -7,7 +7,26 @@
 
 // --------- SERVO PARAMETERS ----------
 #define NBR_SERVOS 4
-#define FIRST_SERVO_PIN 50
+#define BLS452_PIN 50
+#define S9157_PIN  51
+#define BLS551_PIN 52
+#define S3156_PIN  53
+
+#define BLS452_MIN 782
+#define BLS452_MAX 2188
+#define BLS452_DEGREES 141.0
+
+#define S9157_MIN 782
+#define S9157_MAX 2186
+#define S9157_DEGREES 143.0
+
+#define BLS551_MIN 782
+#define BLS551_MAX 2182
+#define BLS551_DEGREES 141.0
+
+#define S3156_MIN 782
+#define S3156_MAX 2185
+#define S3156_DEGREES 141.0
 
 //------ POTENTIOMETER PARAMETERS ------
 #define POT_PIN 8
@@ -31,13 +50,13 @@ int nbyte = 0;
 int length = 4;
 
 byte incoming;
-float offset[4] = {0.5*PI, 0.5*PI, 0.5*PI, 0.5*PI};
+float offset[4] = {-0.389*PI, -0.0*PI, -0.5*PI, -0.5*PI};
 float increase[4] = {0.0, 0.0, 0.0, 0.0};
 float coords[4] = {0.25, 0.25, -0.25, -0.5*PI};
 //float minlimits[4] = {-90.0/180*PI,0.0,-90.0/180*PI,-90.0/180*PI};
-float minlimits[4] = {-180.0/180*PI,-90.0/180*PI,-180.0/180*PI,-180.0/180*PI};
+float minlimits[4] = {-180.0/180*PI,-180.0/180*PI,-180.0/180*PI,-180.0/180*PI};
 //float maxlimits[4] = {90.0/180*PI,85.0/180*PI,90.0/180*PI,90.0/180*PI};
-float maxlimits[4] = {180.0/180*PI,90.0/180*PI,180.0/180*PI,180.0/180*PI};
+float maxlimits[4] = {180.0/180*PI,180.0/180*PI,180.0/180*PI,180.0/180*PI};
 float joints[4] = {0.0, 0.0, 0.0, 0.0};
 float l[4]      = {0.0, 0.25, 0.25, 0.25};
 
@@ -47,8 +66,10 @@ MegaServo Servos[NBR_SERVOS];
 void setup()
 {
   setJoystickPins();
-    for( int i = 0; i < NBR_SERVOS; i++)
-    Servos[i].attach( FIRST_SERVO_PIN + i);
+  Servos[0].attach(BLS452_PIN,BLS452_MIN,BLS452_MAX);
+  Servos[1].attach(S9157_PIN,S9157_MIN,S9157_MAX);
+  Servos[2].attach(BLS551_PIN,BLS551_MIN,BLS551_MAX);
+  Servos[3].attach(S3156_PIN,S3156_MIN,S3156_MAX);
   Serial.begin(BAUD);
   lcd.init();
   readEEPROM(min,max,zeros);
@@ -108,6 +129,8 @@ void loop()
         lcd.print("ended",1,5);
         delay(1000);
         lcd.clear();
+        lcd.print("Manual",0,5);
+        lcd.print("mode",1,6);
       } 
       if(buttons == 10) {
         calibrated = true;
@@ -120,20 +143,20 @@ void loop()
     else {
       calibrationLED(LOW);
     }
-    Serial.print(" ");
-    Serial.print(buttons);
-    Serial.print(" ");
+    //Serial.print(" ");
+    //Serial.print(buttons);
+    //Serial.print(" ");
     for (int i = 0; i < 4; i++) {
       v= axisValue(i);
-      Serial.print(v);
-      Serial.print(" ");
+      //Serial.print(v);
+      //Serial.print(" ");
       if (i==3)
         increase[i] = v/5000.0; // phi angle
       else  
-        increase[i] = v/100.0;  // xyz coords
+        increase[i] = v/5000.0;  // xyz coords
       coords[i] += increase[i];      
     }
-    Serial.println("");
+    //Serial.println("");
     if(buttons == 14) {
       calibrated = false;
       for (int i = 0; i < 4; i++) {
@@ -150,9 +173,19 @@ void loop()
   char j[10];
   int result = ik(coords, joints, l, minlimits, maxlimits, length);
   if (result) {
-    for(i = 0; i < length; i++) {
-        Servos[i].write((joints[i]+offset[i])*180/PI);
-    }
+    Serial.println("");
+    Servos[0].write((-joints[0]+offset[0])*180/PI+BLS452_DEGREES);
+    Serial.print((-joints[0]+offset[0])*180/PI+BLS452_DEGREES);    
+    Serial.print(" ");
+    Servos[1].write((-joints[1]+offset[1])*180/PI+S9157_DEGREES);
+    Serial.print((-joints[1]+offset[1])*180/PI+S9157_DEGREES);
+    Serial.print(" ");
+    Servos[2].write((-joints[2]+offset[2])*180/PI+BLS551_DEGREES);
+    Serial.print((-joints[2]+offset[2])*180/PI+BLS551_DEGREES);
+    Serial.print(" ");
+    Servos[3].write((-joints[3]+offset[3])*180/PI+S3156_DEGREES);
+    Serial.print((-joints[3]+offset[3])*180/PI+S3156_DEGREES);
+    Serial.println(" ");
   }
   else {
     lcd.clear();

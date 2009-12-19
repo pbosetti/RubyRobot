@@ -19,7 +19,7 @@ puts "                         \'conicalspiral\', \'cilindricalspiral\'."
 puts "                         The parameters of this shape are loading from the file"
 puts "                         parameters.yaml."
 puts
-puts "[filename.yaml]: the file will contains the coordinates of selected path"
+puts "[filename.yaml]: the file that contains the coordinates of selected path"
 puts 
 puts "Help created by Giuliani Fabiano"							   
 end

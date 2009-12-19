@@ -198,6 +198,5 @@ end
 
 #server_thread.join
 server_thread.kill
-arduino.puts "M"
 puts "Program ended - Click ENTER to exit"
 STDIN.gets

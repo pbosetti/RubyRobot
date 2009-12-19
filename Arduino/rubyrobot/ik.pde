@@ -5,6 +5,7 @@
 int ik (float *coords, float *joints, float *l, float *minlimits,
         float *maxlimits, int length) {
 
+      
 float sol[2][4];
 float cumError[2];
 float r = sqrt(pow(coords[0],2)+pow(coords[1],2));
