@@ -50,13 +50,14 @@ int nbyte = 0;
 int length = 4;
 
 byte incoming;
-float offset[4] = {-0.389*PI, -0.0*PI, -0.5*PI, -0.5*PI};
+float offset[4] = {-0.389*PI, 0.0*PI, -0.6*PI, -0.5*PI};
 float increase[4] = {0.0, 0.0, 0.0, 0.0};
 float coords[4] = {0.25, 0.25, -0.25, -0.5*PI};
 //float minlimits[4] = {-90.0/180*PI,0.0,-90.0/180*PI,-90.0/180*PI};
-float minlimits[4] = {-180.0/180*PI,-180.0/180*PI,-180.0/180*PI,-180.0/180*PI};
+float minlimits[4] = {0.0,0.0,0.0,0.0};
 //float maxlimits[4] = {90.0/180*PI,85.0/180*PI,90.0/180*PI,90.0/180*PI};
-float maxlimits[4] = {180.0/180*PI,180.0/180*PI,180.0/180*PI,180.0/180*PI};
+float maxlimits[4] = {BLS452_DEGREES,S9157_DEGREES,
+                      BLS551_DEGREES,S3156_DEGREES};
 float joints[4] = {0.0, 0.0, 0.0, 0.0};
 float l[4]      = {0.0, 0.25, 0.25, 0.25};
 
@@ -171,20 +172,13 @@ void loop()
     delay(20);
     int i;
   char j[10];
-  int result = ik(coords, joints, l, minlimits, maxlimits, length);
+  int result = ik(coords, joints, l, minlimits, maxlimits, offset, length);
   if (result) {
-    Serial.println("");
-    Servos[0].write((-joints[0]+offset[0])*180/PI+BLS452_DEGREES);
-    Serial.print((-joints[0]+offset[0])*180/PI+BLS452_DEGREES);    
-    Serial.print(" ");
-    Servos[1].write((-joints[1]+offset[1])*180/PI+S9157_DEGREES);
-    Serial.print((-joints[1]+offset[1])*180/PI+S9157_DEGREES);
-    Serial.print(" ");
-    Servos[2].write((-joints[2]+offset[2])*180/PI+BLS551_DEGREES);
-    Serial.print((-joints[2]+offset[2])*180/PI+BLS551_DEGREES);
-    Serial.print(" ");
-    Servos[3].write((-joints[3]+offset[3])*180/PI+S3156_DEGREES);
-    Serial.print((-joints[3]+offset[3])*180/PI+S3156_DEGREES);
+    for (int i = 0; i < 4; i++) {
+      Servos[i].write(joints[i]);
+      Serial.print(joints[i]);
+      Serial.println("");      
+    }
     Serial.println(" ");
   }
   else {

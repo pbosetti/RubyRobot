@@ -3,7 +3,7 @@
 #define PIGRECO 3.141592653589793;
 
 int ik (float *coords, float *joints, float *l, float *minlimits,
-        float *maxlimits, int length) {
+        float *maxlimits, float *offset, int length) {
 
       
 float sol[2][4];
@@ -30,30 +30,45 @@ sol[1][3] = coords[3]-(sol[1][1]+sol[1][2]);
 int inrange = 1;
 int i,j;
 
-for (i=0; i<=1; i++)
-   for (j=0; j<=2; j++) {
+for (i=0; i<2; i++)
+   for (j=0; j<length; j++) {
       if (sol[i][j] < -PI)
         sol[i][j] = sol[i][j] + 2*PI ;
       else if (sol[i][j] > PI)
         sol[i][j] = sol[i][j] - 2*PI ;
    }
-for (i=0; i<=1; i++)
-   for (j=0; j<=2; j++)
-      if (sol[i][j] < minlimits[j] || sol[i][j] > maxlimits[j])
-        inrange *= 0;
-if (inrange) {
-  cumError[0] = 0;
-  cumError[1] = 0;
-  for (i=0; i<length; i++) {
-    cumError[0] += pow((sol[0][i]-joints[i]),2);
-    cumError[1] += pow((sol[1][i]-joints[i]),2);
-  }
-  if (cumError[0] > cumError[1])
-    j = 1;
-  else
-    j = 0;  
-  for (i=0; i<length; i++)
-      joints[i] = sol[j][i];
+for (i=0; i<2; i++) {
+    sol[i][0] = BLS452_DEGREES + (-sol[i][0]+offset[0])*180/PI;
+    sol[i][1] = S9157_DEGREES + (-sol[i][1]+offset[1])*180/PI;
+    sol[i][2] = BLS551_DEGREES + (-sol[i][2]+offset[2])*180/PI;
+    sol[i][3] = S3156_DEGREES + (-sol[i][3]+offset[3])*180/PI;
+}
+
+cumError[0] = 0;
+cumError[1] = 0;
+for (i=0; i<length; i++) {
+  cumError[0] += pow((sol[0][i]-joints[i]),2);
+  cumError[1] += pow((sol[1][i]-joints[i]),2);
+}
+if (cumError[0] > cumError[1])
+  i = 1;
+else
+  i = 0;
+    
+Serial.print(i);
+Serial.print("-");
+for (j=0; j<length; j++) {
+   if (sol[i][j] < minlimits[j] || sol[i][j] > maxlimits[j])
+     inrange *= 0;
+}
+if (sol[i][1] < 0.01 && sol[i][2] < 0.01 && sol[i][3] < 0.01)
+  inrange *= 0;
+if (inrange) {  
+  for (j=0; j<length; j++){
+      joints[j] = sol[i][j];
+      Serial.print(joints[j]);
+      Serial.println(" "); }
+  Serial.println("");
   return 1;
 } 
 else          
