@@ -3,10 +3,11 @@
 require "yaml"
 require 'rubygems'
 require 'serialport'
+require 'optparse'
+
 require "lib/coordinatesystem"
 #require "lib/ik"
 require "lib/viewer"
-require "lib/help"
 require "lib/basicshape"
 require "lib/arduino"
 require "lib/Dynamics"
@@ -17,18 +18,77 @@ require "lib/Dynamics"
 	end
 end
 
-system "clear"
-help = Help.new
+options = {:automatic => true, :shape => nil, :filename => "", :noarduino => false}
 
-if ARGV.include? "--help"
-	help.general_help
-	exit(0)	
+opts = OptionParser.new do |opts|
+  opts.on("-m","--manual filename", String, "\nAble the manual mode, capture the crosspoint when you press Joystick button 1 and end the data capture when you press the Joystick button 8. At the end of data capture create the yaml file (default crosspoints.yaml).\n") do |f|
+  		options[:automatic] = false
+		if f !=nil
+			options[:filename] = f
+		else
+			options[:filename] = "crosspoints.yaml"
+	   	end
+	end
+	opts.on("-c","--circle filename", String, "\nCreate a circolar path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
+		options[:shape] = :circle
+  		options[:automatic] = false
+		if f !=nil
+			options[:filename] = f
+		else
+			options[:filename] = "crosspoints.yaml"
+	   	end
+	end
+	opts.on("-s","--spiral filename", String, "\nCreate a spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
+		options[:shape] = :spiral
+  		options[:automatic] = false		
+		if f !=nil
+			options[:filename] = f
+		else
+			options[:filename] = "crosspoints.yaml"
+	   	end
+	end
+	opts.on("-cis","--cilindricalspiral filename", String, "\nCreate a cilindrical spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
+		options[:shape] = :cilindrical_spiral
+  		options[:automatic] = false		
+		if f !=nil
+			options[:filename] = f
+		else
+			options[:filename] = "crosspoints.yaml"
+	   	end
+	end
+	opts.on("-cos","--conicalspiral filename", String, "\nCreate a conical spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
+		options[:shape] = :conical_spiral
+  		options[:automatic] = false		
+		if f !=nil
+			options[:filename] = f
+		else
+			options[:filename] = "crosspoints.yaml"
+	   	end
+	end
+	opts.on("-a","--automatic filename", String, "\nAble the automatic mode, send the coordinates of path to robot.\n") do |f|
+		options[:automatic] = true
+		if f !=nil
+			options[:filename] = f
+		else
+			options[:filename] = "crosspoints.yaml"
+	   	end
+	end
+	opts.on("--no-arduino", String, "\nIf you want to work with only the simulator, without the robot.\n") do |f|
+		options[:noarduino] = true
+	end
 end
+
+opts.parse! ARGV
+
+puts options.inspect
+gets
+
+system "clear"
 
 include Arduino
 include InverseKinematicsAndDynamics
 
-if !ARGV.include? "-no-arduino"
+if !options[:noarduino]
 begin
 	baudrate = 57600
 	usbport  = "/dev/ttyUSB0"
@@ -40,39 +100,7 @@ end
 puts "Connected with #{usbport} @#{baudrate} bps"
 end
 
-basicShape = {:circle => "-circle", :conical_spiral => "-conicalspiral",
-			  :cilindrical_spiral => "-cilindricalspiral",
-			  :spiral => "-spiral"}
-
 STDOUT.sync = true
-
-# Parsing the ARGV array
-
-shape = nil
-datacapture = false
-automatic = true
-filename = ""
-basicShape.each do |key,val|
-	if ARGV.include? val
-		if shape == nil
-			shape = key
-		else
-			puts "ERROR: Too many information. Select #{basicShape[shape]} or #{basicShape[key]}"
-			exit(0)
-		end
-	end	
-end
-
-if !shape and ARGV.include? "-datacapture"
-	datacapture = true
-	automatic = false
-end
-
-ARGV.each do |v|
-	filename = v if v.include? ".yaml"
-end	
-
-# End parsing
 
 config = {
   :l => [0.25, 0.25 ,0.25, 0.25],
@@ -132,7 +160,7 @@ v.bodies << BoxBody.new(
 
 server_thread = Thread.new { v.run }
 
-if shape != nil
+if options[:shape] != nil
 	t = 0
 	resp = ""
 	print "Do you want to change the Coordinate System? <y/n>: "
@@ -146,14 +174,14 @@ if shape != nil
 		resp = ""
 end
 
-if datacapture
-	arduino.data_capture(r,target,v,filename)
-	print "Do you want to do the selected path? <y/n>: "
+if !options[:automatic]
+	arduino.data_capture(r,target,v,options[:filename])
+	print "Do you want to do the selected path in automatic mode? <y/n>: "
 	resp = STDIN.gets.chomp
-elsif shape != nil
+elsif options[:shape] != nil
 	include BasicShape
 	print "Creating path"
-	param = YAML::load_file("parameters.yaml")[shape]
+	param = YAML::load_file("parameters.yaml")[options[:shape]]
 	case shape
 		when :circle
 			sh = Circle.new
@@ -182,8 +210,7 @@ elsif shape != nil
 		elsif t/T > 0.25
 			print "."
 		end	
-		filename = "crosspoints.yaml" if filename == ""
-		File.open(filename, "w") {|f| YAML.dump(crosspoints, f)}
+		File.open(options[:filename], "w") {|f| YAML.dump(crosspoints, f)}
 	end
 	print "finish"
 	puts
@@ -191,9 +218,8 @@ elsif shape != nil
 	resp = STDIN.gets.chomp
 end
 
-if resp == "y" or automatic
-	filename = "crosspoints.yaml" if filename == ""
-	arduino.automatic_mode(r,v,filename)
+if resp == "y" or options[:automatic]
+	arduino.automatic_mode(r,v,options[:filename])
 end
 
 #server_thread.join
