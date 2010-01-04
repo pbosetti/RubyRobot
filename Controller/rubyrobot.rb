@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+# Created by Fabiano Giuliani on 2009-10-05.
+# Copyright (c) 2009 University of Trento. All rights reserved.
 
 require "yaml"
 require 'rubygems'
@@ -88,17 +90,15 @@ system "clear"
 include Arduino
 include InverseKinematicsAndDynamics
 
-if !options[:noarduino]
 begin
 	baudrate = 57600
 	usbport  = "/dev/ttyUSB0"
-	arduino  = Controller.new(usbport,baudrate)
+	arduino  = Controller.new(usbport,baudrate,options[:noarduino])
 rescue
 	warn "ERROR: No device connected."
 	exit(0)
 end
 puts "Connected with #{usbport} @#{baudrate} bps"
-end
 
 STDOUT.sync = true
 

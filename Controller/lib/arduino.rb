@@ -17,8 +17,9 @@ SERVOS = {:base => 1, :shoulder => 2, :elbow => 3, :wrist=> 4} # servo number
 
 class Controller < SerialPort	
 
-	def initialize(usbport = USBPORT, baudrate = BAUDRATE)
-		super(usbport, baudrate, 8, 1, SerialPort::NONE)
+	def initialize(usbport = USBPORT, baudrate = BAUDRATE, noarduino = false)
+		puts noarduino
+		#super(usbport, baudrate, 8, 1, SerialPort::NONE) if !noarduino
 	end
 	
 	def data_capture(r,target,v,filename)
@@ -124,27 +125,17 @@ class Controller < SerialPort
 	end
 	
 	def automatic_mode(r,v,filename)
-		self.puts "A" # AUTOMATIC MODE
+		self.puts "A" if !options[:noarduino]# AUTOMATIC MODE
 		crossjoints = YAML::load_file(filename)
-		#crosspoints = YAML::load_file(filename)
-		#crossjoints = Array.new(0,Hash.new)
-		#crosspoints.each do |cp|
-		#	cj = {:time=> cp.delete(:time)}
-		#  	puts "Out of range!" if !r.ik(cp)
-		#	crossjoints << cj.merge({:joints => r.joints})
-		#end
-		puts filename.inspect
-		puts crossjoints.inspect
-		gets
 		last_time = 0.0
 		crossjoints.each do |cj|
 			v.bodies.each_with_index do |b, i|
-			  		b.theta = cj[:joints][i].to_deg
+				b.theta = cj[:joints][i].to_deg
 			end
 			sleep cj[:time]-last_time
 			last_time = cj[:time]
 		end
-		self.puts "M"
+		self.puts "M" if !options[:noarduino]
 	end
 
 private

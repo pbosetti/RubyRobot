@@ -50,16 +50,16 @@ int nbyte = 0;
 int length = 4;
 
 byte incoming;
-float offset[4] = {-0.389*PI, 0.0*PI, -0.6*PI, -0.5*PI};
+float offset[4] = {-0.389*PI, 0.055*PI, -0.75*PI, -0.389*PI};
 float increase[4] = {0.0, 0.0, 0.0, 0.0};
-float coords[4] = {0.25, 0.25, -0.25, -0.5*PI};
+float coords[4] = {250.0, 250.0, -250.0, -0.5*PI};
 //float minlimits[4] = {-90.0/180*PI,0.0,-90.0/180*PI,-90.0/180*PI};
 float minlimits[4] = {0.0,0.0,0.0,0.0};
 //float maxlimits[4] = {90.0/180*PI,85.0/180*PI,90.0/180*PI,90.0/180*PI};
 float maxlimits[4] = {BLS452_DEGREES,S9157_DEGREES,
                       BLS551_DEGREES,S3156_DEGREES};
 float joints[4] = {0.0, 0.0, 0.0, 0.0};
-float l[4]      = {0.0, 0.25, 0.25, 0.25};
+float l[4]      = {0.0, 250.0, 250.0, 250.0};
 
 SLCD lcd = SLCD(numRows, numCols);
 MegaServo Servos[NBR_SERVOS];
@@ -144,20 +144,20 @@ void loop()
     else {
       calibrationLED(LOW);
     }
-    //Serial.print(" ");
-    //Serial.print(buttons);
-    //Serial.print(" ");
+    Serial.print(" ");
+    Serial.print(buttons);
+    Serial.print(" ");
     for (int i = 0; i < 4; i++) {
       v= axisValue(i);
-      //Serial.print(v);
-      //Serial.print(" ");
+      Serial.print(v);
+      Serial.print(" ");
       if (i==3)
-        increase[i] = v/5000.0; // phi angle
+        increase[i] = v/500.0; // phi angle
       else  
-        increase[i] = v/5000.0;  // xyz coords
+        increase[i] = v/50.0;  // xyz coords
       coords[i] += increase[i];      
     }
-    //Serial.println("");
+    Serial.println("");
     if(buttons == 14) {
       calibrated = false;
       for (int i = 0; i < 4; i++) {
@@ -169,26 +169,30 @@ void loop()
      lcd.print("Calibration", 0, 2);
      lcd.print("mode", 1, 6);
     }
-    delay(20);
+    //delay(20);
     int i;
   char j[10];
   int result = ik(coords, joints, l, minlimits, maxlimits, offset, length);
   if (result) {
-    for (int i = 0; i < 4; i++) {
-      Servos[i].write(joints[i]);
-      Serial.print(joints[i]);
-      Serial.println("");      
-    }
-    Serial.println(" ");
+    Servos[0].writeMicroseconds(map(joints[0],0,BLS452_DEGREES,BLS452_MIN,BLS452_MAX));
+    Servos[1].writeMicroseconds(map(joints[1],0,S9157_DEGREES,S9157_MIN,S9157_MAX));
+    Servos[2].writeMicroseconds(map(joints[2],0,BLS551_DEGREES,BLS551_MIN,BLS551_MAX));
+    Servos[3].writeMicroseconds(map(joints[3],0,S3156_DEGREES,S3156_MIN,S3156_MAX));    
+    //for (int i = 0; i < 4; i++) {
+    //  Serial.print(joints[i]);
+    //  Serial.println("");      
+    //}
+    //Serial.println(" ");
   }
   else {
     lcd.clear();
     lcd.print("Out of range!",0,1);
+    Serial.println("OoR");
     for (i = 0; i < length; i++)
       coords[i] -= increase[i];
     delay(100);
   }
-  delay(10);
+  delayMicroseconds(10);
   }
   else { // Automatic mode
     if (Serial.available() > 0) {

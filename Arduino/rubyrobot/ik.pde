@@ -50,18 +50,16 @@ for (i=0; i<length; i++) {
   cumError[0] += pow((sol[0][i]-joints[i]),2);
   cumError[1] += pow((sol[1][i]-joints[i]),2);
 }
-if (cumError[0] > cumError[1])
+if (cumError[0] >= cumError[1])
   i = 1;
 else
   i = 0;
-    
-Serial.print(i);
-Serial.print("-");
+
 for (j=0; j<length; j++) {
    if (sol[i][j] < minlimits[j] || sol[i][j] > maxlimits[j])
      inrange *= 0;
 }
-if (sol[i][1] < 0.01 && sol[i][2] < 0.01 && sol[i][3] < 0.01)
+if (sol[i][1] < 1.0 && sol[i][2] < 1.0 && sol[i][3] < 1.0)
   inrange *= 0;
 if (inrange) {  
   for (j=0; j<length; j++){
@@ -71,7 +69,11 @@ if (inrange) {
   Serial.println("");
   return 1;
 } 
-else          
+else
+ for (j=0; j<length; j++){
+      Serial.print(sol[i][j]);
+      Serial.println(" "); }
+  Serial.println("");
  return 0;
 }
 
