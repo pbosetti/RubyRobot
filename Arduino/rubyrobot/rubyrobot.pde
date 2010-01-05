@@ -197,22 +197,28 @@ void loop()
   else { // Automatic mode
     if (Serial.available() > 0) {
       incoming = Serial.read();
-      if (incoming == 'S')
-        servo = true;
-      if (servo) {
+//      if (incoming == 'S')
+//        servo = true;
+//      if (servo) {
         nbyte++;
         switch (nbyte%2) {
           case 1: joints[nbyte/2] = incoming*256; break;
           case 2: joints[nbyte/2] += incoming; break;
         }
         if (nbyte == 8) {
-          servo = false;
+//          servo = false;
           nbyte = 0;
-          for(int i = 0; i < length; i++) {
-              Servos[i].write((joints[i]+offset[i])*180/PI);
-          }          
+          float joint;
+          joint = BLS452_DEGREES - joints[0]/10.0 + offset[0]*180/PI;
+          Servos[0].writeMicroseconds(map(joint,0,BLS452_DEGREES,BLS452_MIN,BLS452_MAX));
+          joint = S9157_DEGREES  - joints[1]/10.0 + offset[1]*180/PI;
+    	  Servos[1].writeMicroseconds(map(joint,0,S9157_DEGREES,S9157_MIN,S9157_MAX));
+          joint = BLS551_DEGREES  - joints[2]/10.0 + offset[2]*180/PI;
+    	  Servos[2].writeMicroseconds(map(joint,0,BLS551_DEGREES,BLS551_MIN,BLS551_MAX));
+          joint = S3156_DEGREES  - joints[3]/10.0 + offset[3]*180/PI;    	  
+    	  Servos[3].writeMicroseconds(map(joint,0,S3156_DEGREES,S3156_MIN,S3156_MAX));
         }
-      }
+//      }
     }
   }
   
