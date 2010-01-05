@@ -17,13 +17,12 @@ SERVOS = {:base => 1, :shoulder => 2, :elbow => 3, :wrist=> 4} # servo number
 
 class Controller < SerialPort	
 
-	def initialize(usbport = USBPORT, baudrate = BAUDRATE, noarduino = false)
-		puts noarduino
-		#super(usbport, baudrate, 8, 1, SerialPort::NONE) if !noarduino
+	def initialize(usbport = USBPORT, baudrate = BAUDRATEop)
+		super(usbport, baudrate, 8, 1, SerialPort::NONE) if !noarduino
 	end
 	
 	def data_capture(r,target,v,filename)
-		self.puts "M"
+		self.print "M"
 		first_time_click = 0.0
 		running = true
 		p = Array.new(1)
@@ -76,7 +75,7 @@ class Controller < SerialPort
 	end
 	
 	def get_rtm (r,target,v)
-		self.puts "M"
+		self.print "M"
 		first_time_click = 0.0
 		running = true
 		line = [0,0,0,0,0]
@@ -125,17 +124,35 @@ class Controller < SerialPort
 	end
 	
 	def automatic_mode(r,v,filename)
-		self.puts "A" if !options[:noarduino]# AUTOMATIC MODE
+		STDOUT.print "Press <Enter> to begin the simulation."
+		STDIN.gets
+		self.print "A" # AUTOMATIC MODE
+		sleep 1
 		crossjoints = YAML::load_file(filename)
 		last_time = 0.0
 		crossjoints.each do |cj|
 			v.bodies.each_with_index do |b, i|
 				b.theta = cj[:joints][i].to_deg
 			end
+			for i in 0..3 do
+				joint = (cj[:joints][i].to_deg*100.0).to_i
+				if joint < 0
+				    STDOUT.print((-joint/256*2).to_i.chr)
+					self.print((-joint/256*2).to_i.chr)
+					STDOUT.print " "
+				else
+					STDOUT.print((joint/256).to_i.chr) 
+					self.print((joint/256).to_i.chr)
+					STDOUT.print " "
+				end	
+				STDOUT.print((joint%256).to_i.chr)
+				self.print((joint%256).to_i.chr)
+				STDOUT.print "\n"
+			end
 			sleep cj[:time]-last_time
 			last_time = cj[:time]
 		end
-		self.puts "M" if !options[:noarduino]
+		self.print "M"
 	end
 
 private

@@ -45,7 +45,7 @@ unsigned int zeros[] = {
   0, 0, 0, 0  };
 
 boolean manual = true;
-boolean servo  = false;
+//boolean servo  = false;
 int nbyte = 0;
 int length = 4;
 
@@ -89,25 +89,18 @@ void setup()
 void loop() 
 { 
   short int buttons  = 0;
-  if (Serial.available() > 0) {
-    incoming = Serial.read();
-    switch (incoming) {
-      case 'A': manual = false; break;
-      case 'M': manual = true;  break;
-      default: ;
-    }
-  if (manual) {
-    lcd.clear();
-    lcd.print("Manual",0,5);
-    lcd.print("mode",1,6);  
-  }
-  else {
-    lcd.clear();
-    lcd.print("Automatic",0,3);
-    lcd.print("mode",1,6);  
-  }  
-  }
   if (manual) { // Manual mode
+    if (Serial.available() > 0) {
+      incoming = Serial.read();
+    if (incoming == 'A') {
+        manual = false;
+        lcd.clear();
+        lcd.print("Automatic",0,3);
+        lcd.print("mode",1,6);
+        Serial.println("--- Automatic Mode ---");
+    }
+    }
+    else {  
     static bool calibrated = true;
     int v = 0;  
     buttons = readJoystickButtons(buttons);
@@ -192,35 +185,62 @@ void loop()
       coords[i] -= increase[i];
     delay(100);
   }
-  delayMicroseconds(10);
   }
-  else { // Automatic mode
+  }
+  else { // Automatic mode 
     if (Serial.available() > 0) {
       incoming = Serial.read();
+      if (incoming == 'M') {
+        manual = true;
+        lcd.clear();
+        lcd.print("Manual",0,5);
+        lcd.print("mode",1,6);
+        Serial.println("--- Manual Mode ---");        
+      }
+      else {  
 //      if (incoming == 'S')
 //        servo = true;
 //      if (servo) {
+        Serial.print(incoming);
+        Serial.print(" ");
         nbyte++;
         switch (nbyte%2) {
-          case 1: joints[nbyte/2] = incoming*256; break;
-          case 2: joints[nbyte/2] += incoming; break;
+          case 1: if (incoming > 70)
+                    joints[nbyte/2] = -incoming*256.0/2.0;
+                  else
+                    joints[nbyte/2] = incoming*256.0; break;  
+          case 0: if (joints[nbyte/2] < 0)
+                    joints[nbyte/2] -= incoming;
+                  else
+                    joints[nbyte/2] += incoming; break;  
         }
         if (nbyte == 8) {
+          Serial.print("=> ");
 //          servo = false;
           nbyte = 0;
           float joint;
-          joint = BLS452_DEGREES - joints[0]/10.0 + offset[0]*180/PI;
+          joint = BLS452_DEGREES - joints[0]/100.0 + offset[0]*180/PI;
+          Serial.print(joint);
+          Serial.print(" ");
           Servos[0].writeMicroseconds(map(joint,0,BLS452_DEGREES,BLS452_MIN,BLS452_MAX));
-          joint = S9157_DEGREES  - joints[1]/10.0 + offset[1]*180/PI;
+          joint = S9157_DEGREES  - joints[1]/100.0 + offset[1]*180/PI;
+          Serial.print(joint);
+          Serial.print(" ");
     	  Servos[1].writeMicroseconds(map(joint,0,S9157_DEGREES,S9157_MIN,S9157_MAX));
-          joint = BLS551_DEGREES  - joints[2]/10.0 + offset[2]*180/PI;
+          joint = BLS551_DEGREES  - joints[2]/100.0 + offset[2]*180/PI;
+          Serial.print(joint);
+          Serial.print(" ");
     	  Servos[2].writeMicroseconds(map(joint,0,BLS551_DEGREES,BLS551_MIN,BLS551_MAX));
-          joint = S3156_DEGREES  - joints[3]/10.0 + offset[3]*180/PI;    	  
+          joint = S3156_DEGREES  - joints[3]/100.0 + offset[3]*180/PI;    	  
+          Serial.print(joint);
+          Serial.print(" ");
     	  Servos[3].writeMicroseconds(map(joint,0,S3156_DEGREES,S3156_MIN,S3156_MAX));
+          Serial.println(" ");
         }
+      }
 //      }
     }
   }
-  
+  delay(10);
 }
 

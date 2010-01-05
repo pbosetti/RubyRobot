@@ -90,15 +90,17 @@ system "clear"
 include Arduino
 include InverseKinematicsAndDynamics
 
-begin
-	baudrate = 57600
-	usbport  = "/dev/ttyUSB0"
-	arduino  = Controller.new(usbport,baudrate,options[:noarduino])
-rescue
-	warn "ERROR: No device connected."
-	exit(0)
+if !options[:noarduino]
+	begin
+		baudrate = 57600
+		usbport  = "/dev/ttyUSB0"
+		arduino  = Controller.new(usbport,baudrate)
+	rescue
+		warn "ERROR: No device connected."
+		exit(0)
+	end
+	puts "Connected with #{usbport} @#{baudrate} bps"
 end
-puts "Connected with #{usbport} @#{baudrate} bps"
 
 STDOUT.sync = true
 
