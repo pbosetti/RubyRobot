@@ -10,6 +10,8 @@ module Optimizer
 
 class PPOcubicspline
 
+	attr_accessor :optfn
+
 	def initialize(r,filename,vi,ai,vf,af,tq,dT)
 		crosspoints = YAML::load_file(filename)
 		crossjoints = Array.new(0,Hash.new)
@@ -204,7 +206,9 @@ class PPOcubicspline
 	end
 	#puts cj.inspect
 	#return cj
-	File.open("optimizedpoints.yaml", "w") {|f| YAML.dump(cj, f)}
+	@optfn = filename.delete ".yaml"
+	@optfn = @optfn + "-opt.yaml"
+	File.open(@optfn, "w") {|f| YAML.dump(cj, f)}
 end
 
 private

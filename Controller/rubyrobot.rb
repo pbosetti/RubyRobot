@@ -180,6 +180,18 @@ if !options[:automatic]
 	arduino.data_capture(r,target,v,options[:filename])
 	print "Do you want to do the selected path in automatic mode? <y/n>: "
 	resp = STDIN.gets.chomp
+	if resp == "y"
+		ai = [0,0,0,0]
+		af = [0,0,0,0]
+		vi = [0,0,0,0]
+		vf = [0,0,0,0]
+		tq = 0.05
+		dT = 0.02
+		PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
+		options[:automatic] = true
+		filename = PPOcubicspline.optfn
+		resp = ""
+	end
 elsif options[:shape] != nil
 	include BasicShape
 	print "Creating path"

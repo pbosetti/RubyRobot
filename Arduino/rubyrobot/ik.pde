@@ -62,18 +62,18 @@ for (j=0; j<length; j++) {
 if (sol[i][1] < 1.0 && sol[i][2] < 1.0 && sol[i][3] < 1.0)
   inrange *= 0;
 if (inrange) {  
-  for (j=0; j<length; j++){
+  for (j=0; j<length; j++) //{
       joints[j] = sol[i][j];
-      Serial.print(joints[j]);
-      Serial.println(" "); }
-  Serial.println("");
+//      Serial.print(joints[j]);
+//      Serial.println(" "); }
+//  Serial.println("");
   return 1;
 } 
 else
- for (j=0; j<length; j++){
-      Serial.print(sol[i][j]);
-      Serial.println(" "); }
-  Serial.println("");
+ //for (j=0; j<length; j++){
+ //     Serial.print(sol[i][j]);
+ //     Serial.println(" "); }
+ // Serial.println("");
  return 0;
 }
 

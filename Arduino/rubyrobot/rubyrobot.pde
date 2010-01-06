@@ -147,7 +147,7 @@ void loop()
       if (i==3)
         increase[i] = v/500.0; // phi angle
       else  
-        increase[i] = v/50.0;  // xyz coords
+        increase[i] = v/20.0;  // xyz coords
       coords[i] += increase[i];      
     }
     Serial.println("");
@@ -180,7 +180,7 @@ void loop()
   else {
     lcd.clear();
     lcd.print("Out of range!",0,1);
-    Serial.println("OoR");
+//    Serial.println("OoR");
     for (i = 0; i < length; i++)
       coords[i] -= increase[i];
     delay(100);
