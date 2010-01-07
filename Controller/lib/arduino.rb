@@ -35,15 +35,15 @@ class Controller < SerialPort
 		  line = line.map {|e| e.to_i}
 		  rebound = (Time.now.to_f - last_click < 1)
 		  begin
-		  	target[:x] -= line[1]/100.0
-		  	target[:y] += line[2]/100.0
-		   	target[:z] += line[3]/100.0
-			target[:phi] += line[4]/5000.0
+		  	target[:x] -= line[1]/20000.0
+		  	target[:y] += line[2]/20000.0
+		   	target[:z] += line[3]/20000.0
+			target[:phi] += line[4]/500000.0
 			if !r.ik(target)
-				target[:x] += line[1]/100.0
-		  		target[:y] -= line[2]/100.0
-		   		target[:z] -= line[3]/100.0
-				target[:phi] -= line[4]/5000.0
+				target[:x] += line[1]/20000.0
+		  		target[:y] -= line[2]/20000.0
+		   		target[:z] -= line[3]/20000.0
+				target[:phi] -= line[4]/500000.0
 			end
 			if line[0] == 1 and ! rebound
 				if first_time_click == 0
@@ -85,18 +85,18 @@ class Controller < SerialPort
 			line = self.gets.split
 			line = line.map {|e| e.to_i}
 			rebound = (Time.now.to_f - last_click < 1)
-			if line
-				target[:x] -= line[1]/100.0
-			  	target[:y] += line[2]/100.0
-			   	target[:z] += line[3]/100.0
-				target[:phi] += line[4]/5000.0
+			begin
+			  	target[:x] -= line[1]/20000.0
+			  	target[:y] += line[2]/20000.0
+			   	target[:z] += line[3]/20000.0
+				target[:phi] += line[4]/500000.0
 				if !r.ik(target)
-					target[:x] += line[1]/100.0
-			  		target[:y] -= line[2]/100.0
-			   		target[:z] -= line[3]/100.0
-					target[:phi] -= line[4]/5000.0
+					target[:x] += line[1]/20000.0
+			  		target[:y] -= line[2]/20000.0
+			   		target[:z] -= line[3]/20000.0
+					target[:phi] -= line[4]/500000.0
 				end
-			end
+			#end
 			if line[0] == 1 and ! rebound
 				STDOUT.print "Point n°"
 				STDOUT.print p.length+1
@@ -118,7 +118,10 @@ class Controller < SerialPort
 					end	
 				end	
 			end
-			self.update_sim(r,v)
+			update_sim(r,v)
+			rescue
+				STDOUT.puts "Error: #{$!} #{line.inspect}"
+		  	end
 		end	
 		return rtm
 	end
@@ -128,6 +131,8 @@ class Controller < SerialPort
 		STDIN.gets
 		self.print "A" # AUTOMATIC MODE
 		sleep 1
+		#STDOUT.puts filename
+		#STDIN.gets
 		crossjoints = YAML::load_file(filename)
 		last_time = 0.0
 		crossjoints.each do |cj|
@@ -137,17 +142,17 @@ class Controller < SerialPort
 			for i in 0..3 do
 				joint = (cj[:joints][i].to_deg*100.0).to_i
 				if joint < 0
-				    STDOUT.print((-joint/256*2).to_i.chr)
+				    #STDOUT.print((-joint/256*2).to_i.chr)
 					self.print((-joint/256*2).to_i.chr)
-					STDOUT.print " "
+					#STDOUT.print " "
 				else
-					STDOUT.print((joint/256).to_i.chr) 
+					#STDOUT.print((joint/256).to_i.chr) 
 					self.print((joint/256).to_i.chr)
-					STDOUT.print " "
+					#STDOUT.print " "
 				end	
-				STDOUT.print((joint%256).to_i.chr)
+				#STDOUT.print((joint%256).to_i.chr)
 				self.print((joint%256).to_i.chr)
-				STDOUT.print "\n"
+				#STDOUT.print "\n"
 			end
 			sleep cj[:time]-last_time
 			last_time = cj[:time]

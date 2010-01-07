@@ -206,7 +206,7 @@ class PPOcubicspline
 	end
 	#puts cj.inspect
 	#return cj
-	@optfn = filename.delete ".yaml"
+	@optfn = filename[0..filename.length-6]
 	@optfn = @optfn + "-opt.yaml"
 	File.open(@optfn, "w") {|f| YAML.dump(cj, f)}
 end

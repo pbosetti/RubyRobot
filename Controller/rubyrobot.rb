@@ -8,11 +8,11 @@ require 'serialport'
 require 'optparse'
 
 require "lib/coordinatesystem"
-#require "lib/ik"
 require "lib/viewer"
 require "lib/basicshape"
 require "lib/arduino"
 require "lib/Dynamics"
+require "lib/optimizer"
 
 %w[ABRT HUP INT TERM].each do |s|
   Signal.trap(s) do
@@ -20,7 +20,7 @@ require "lib/Dynamics"
 	end
 end
 
-options = {:automatic => true, :shape => nil, :filename => "", :noarduino => false}
+options = {:automatic => true, :shape => nil, :filename => "", :noarduino => false, :optimized => true}
 
 opts = OptionParser.new do |opts|
   opts.on("-m","--manual filename", String, "\nAble the manual mode, capture the crosspoint when you press Joystick button 1 and end the data capture when you press the Joystick button 8. At the end of data capture create the yaml file (default crosspoints.yaml).\n") do |f|
@@ -49,7 +49,7 @@ opts = OptionParser.new do |opts|
 			options[:filename] = "crosspoints.yaml"
 	   	end
 	end
-	opts.on("-cis","--cilindricalspiral filename", String, "\nCreate a cilindrical spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
+	opts.on("-i","--cilindricalspiral filename", String, "\nCreate a cilindrical spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
 		options[:shape] = :cilindrical_spiral
   		options[:automatic] = false		
 		if f !=nil
@@ -58,7 +58,7 @@ opts = OptionParser.new do |opts|
 			options[:filename] = "crosspoints.yaml"
 	   	end
 	end
-	opts.on("-cos","--conicalspiral filename", String, "\nCreate a conical spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
+	opts.on("-l","--conicalspiral filename", String, "\nCreate a conical spiral path with the parameters specified in the parameters.yaml file and save the path in filename yaml file (default crosspoints.yaml).\n") do |f|
 		options[:shape] = :conical_spiral
   		options[:automatic] = false		
 		if f !=nil
@@ -75,6 +75,9 @@ opts = OptionParser.new do |opts|
 			options[:filename] = "crosspoints.yaml"
 	   	end
 	end
+	opts.on("-o", "--optimizer", "\nIf you want to optimize the path contained in the yaml file.\n") do |f|
+		options[:optimized] = false
+	end
 	opts.on("--no-arduino", String, "\nIf you want to work with only the simulator, without the robot.\n") do |f|
 		options[:noarduino] = true
 	end
@@ -83,12 +86,13 @@ end
 opts.parse! ARGV
 
 puts options.inspect
-gets
+#gets
 
 system "clear"
 
 include Arduino
 include InverseKinematicsAndDynamics
+include Optimizer
 
 if !options[:noarduino]
 	begin
@@ -106,7 +110,7 @@ STDOUT.sync = true
 
 config = {
   :l => [0.25, 0.25 ,0.25, 0.25],
-  :home => [  0.0,  0.0,  0.0],
+  :home => {:x=>0.25, :y => 0.25, :z => -0.25, :phi => -90.0.to_rad},
   :limits => [
     -180.0.to_rad..180.0.to_rad,
     -180.0.to_rad..180.0.to_rad,
@@ -127,7 +131,13 @@ config = {
 }
 r = Puma560.new(config)
 
-target = {:x=>0.25, :y => 0.25, :z => -0.25, :phi => -90.0.to_rad}
+ai = [0,0,0,0]
+af = [0,0,0,0]
+vi = [0,0,0,0]
+vf = [0,0,0,0]
+tq = 0.05
+dT = 0.02
+target = config[:home]
 r.ik(target)
 joints = r.joints.map {|v| v.to_deg}
 
@@ -173,30 +183,11 @@ if options[:shape] != nil
 	else
 		rtm = Matrix.identity(4)
 	end
-		resp = ""
-end
-
-if !options[:automatic]
-	arduino.data_capture(r,target,v,options[:filename])
-	print "Do you want to do the selected path in automatic mode? <y/n>: "
-	resp = STDIN.gets.chomp
-	if resp == "y"
-		ai = [0,0,0,0]
-		af = [0,0,0,0]
-		vi = [0,0,0,0]
-		vf = [0,0,0,0]
-		tq = 0.05
-		dT = 0.02
-		PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
-		options[:automatic] = true
-		filename = PPOcubicspline.optfn
-		resp = ""
-	end
-elsif options[:shape] != nil
+	resp = ""
 	include BasicShape
 	print "Creating path"
 	param = YAML::load_file("parameters.yaml")[options[:shape]]
-	case shape
+	case options[:shape]
 		when :circle
 			sh = Circle.new
 		when :conical_spiral
@@ -226,13 +217,34 @@ elsif options[:shape] != nil
 		end	
 		File.open(options[:filename], "w") {|f| YAML.dump(crosspoints, f)}
 	end
+	cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
+	
 	print "finish"
 	puts
 	print "Do you want to do the selected path? <y/n>: "
 	resp = STDIN.gets.chomp
-end
+	if resp == "y"
+		options[:automatic] = true
+		options[:filename] = cubicspline.optfn
+	end
+end	
+if !options[:automatic]
+	arduino.data_capture(r,target,v,options[:filename])
+	cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
+	print "Do you want to do the selected path in automatic mode? <y/n>: "
+	resp = STDIN.gets.chomp
+	if resp == "y"
+		options[:automatic] = true
+		options[:filename] = cubicspline.optfn
+		resp = ""
+	end
+end	
 
-if resp == "y" or options[:automatic]
+if options[:automatic]
+	if !options[:optimized]
+		cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
+		options[:filename] = cubicspline.optfn
+	end
 	arduino.automatic_mode(r,v,options[:filename])
 end
 
