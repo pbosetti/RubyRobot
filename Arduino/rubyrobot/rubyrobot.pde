@@ -145,7 +145,7 @@ void loop()
       Serial.print(v);
       Serial.print(" ");
       if (i==3)
-        increase[i] = v/500.0; // phi angle
+        increase[i] = v/100.0; // phi angle
       else  
         increase[i] = v/20.0;  // xyz coords
       coords[i] += increase[i];      
@@ -198,9 +198,6 @@ void loop()
         Serial.println("--- Manual Mode ---");        
       }
       else {  
-//      if (incoming == 'S')
-//        servo = true;
-//      if (servo) {
         Serial.print(incoming);
         Serial.print(" ");
         nbyte++;
@@ -216,29 +213,27 @@ void loop()
         }
         if (nbyte == 8) {
           Serial.print("=> ");
-//          servo = false;
           nbyte = 0;
           float joint;
           joint = BLS452_DEGREES - joints[0]/100.0 + offset[0]*180/PI;
-          Serial.print(joint);
-          Serial.print(" ");
+          //Serial.print(joint);
+          //Serial.print(" ");
           Servos[0].writeMicroseconds(map(joint,0,BLS452_DEGREES,BLS452_MIN,BLS452_MAX));
           joint = S9157_DEGREES  - joints[1]/100.0 + offset[1]*180/PI;
-          Serial.print(joint);
-          Serial.print(" ");
+          //Serial.print(joint);
+          //Serial.print(" ");
     	  Servos[1].writeMicroseconds(map(joint,0,S9157_DEGREES,S9157_MIN,S9157_MAX));
           joint = BLS551_DEGREES  - joints[2]/100.0 + offset[2]*180/PI;
-          Serial.print(joint);
-          Serial.print(" ");
+          //Serial.print(joint);
+          //Serial.print(" ");
     	  Servos[2].writeMicroseconds(map(joint,0,BLS551_DEGREES,BLS551_MIN,BLS551_MAX));
           joint = S3156_DEGREES  - joints[3]/100.0 + offset[3]*180/PI;    	  
-          Serial.print(joint);
-          Serial.print(" ");
+          //Serial.print(joint);
+          //Serial.print(" ");
     	  Servos[3].writeMicroseconds(map(joint,0,S3156_DEGREES,S3156_MIN,S3156_MAX));
-          Serial.println(" ");
+          //Serial.println(" ");
         }
       }
-//      }
     }
   }
   delay(10);
