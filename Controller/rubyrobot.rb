@@ -109,8 +109,8 @@ end
 STDOUT.sync = true
 
 config = {
-  :l => [0.25, 0.25 ,0.25, 0.25],
-  :home => {:x=>0.25, :y => 0.25, :z => -0.25, :phi => -90.0.to_rad},
+  :l => [0.0, 350.0 , 350.0, 50.0], #[mm]
+  :home => {:x=>350.0, :y => 350.0, :z => -50.0, :phi => -90.0.to_rad},
   :limits => [
     -180.0.to_rad..180.0.to_rad,
     -180.0.to_rad..180.0.to_rad,
@@ -118,14 +118,14 @@ config = {
     -180.0.to_rad..180.0.to_rad
   ],
   :psi => -90.0.to_rad,
-  :vmax => [6.977393246, 6.977393246, 8.716478191, 8.716478191], # inserire parametri caratterizzazione
-  :tmax => [2.5, 2.5, 0.53955, 0.53955], # inserire parametri caratterizzazione   
-  :m => [0.7550, 0.0660, 0.0660, 0.0660],
-  :inertia => [[0.0019, 0.0030, 0.0030],  # Ix1, Iy1, Iz1
-  			   [0.0, 0.0, 0.0014],  # Ix2, Iy2, Iz2
-  			   [0.0, 0.0, 0.0014],  # Ix3, Iy3, Iz3
-  			   [0.0, 0.0, 0.0014]], # Ix4, Iy4, Iz4
-  :mm => [0.2, 0.2, 0.15, 0.10],
+  :vmax => [7.80773041, 7.587469858, 10.471975513, 7.801621757], #[rad/s]
+  :tmax => [12900.0, 24400.0, 7800.0, 1300.0], # [Nmm]
+  :m => [0.755, 0.0660, 0.0660, 0.0660],   # [kg]
+  :inertia => [[0.0019, 0.0030, 0.0030],  # Ix1, Iy1, Iz1 [kg mm4]
+  			   [20.87, 94.287, 94.287],  # Ix2, Iy2, Iz2 [kg mm4]
+  			   [20.87, 94.287, 94.287],  # Ix3, Iy3, Iz3 [kg mm4]
+  			   [2.98 , 2.74  , 2.74 ]], # Ix4, Iy4, Iz4 [kg mm4]
+  :mm => [0.2, 0.2, 0.15, 0.10], #[kg]
   :Rext => [0.0, 0.0, 0.0, 0.0],
   :Text => [0.0, 0.0, 0.0, 0.0]  
 }
@@ -152,19 +152,19 @@ v.bodies << BoxBody.new(
   :color => [1,1,1,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a => r.l[1]*300, 
+  :a => r.l[1], 
   :theta => joints[1], 
   :alpha => 0.0,
   :color => [1.0,0.8,0.8,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a =>r.l[2]*300, 
+  :a =>r.l[2], 
   :theta => joints[2], 
   :alpha => 0.0, 
   :color => [0.8,1.0,0.8,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a =>r.l[3]*300,
+  :a =>r.l[3],
   :w => 2, 
   :theta => joints[3], 
   :alpha => 0.0, 
@@ -199,8 +199,8 @@ if options[:shape] != nil
 	end
 	path = sh.create(param.merge({:rtm => rtm}))
 	t  = 0.0
-	dt = 0.05
-	T  = 5.0
+	dt = 0.1
+	T  = 10.0
 	points = Array.new()
 	crosspoints = Array.new(0,Hash.new)
 	while t <= T

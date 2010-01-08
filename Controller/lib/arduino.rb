@@ -35,15 +35,15 @@ class Controller < SerialPort
 		  line = line.map {|e| e.to_i}
 		  rebound = (Time.now.to_f - last_click < 1)
 		  begin
-		  	target[:x] -= line[1]/20000.0
-		  	target[:y] += line[2]/20000.0
-		   	target[:z] += line[3]/20000.0
-			target[:phi] += line[4]/500000.0
+		  	target[:x] -= line[1]/50.0
+		  	target[:y] += line[2]/50.0
+		   	target[:z] += line[3]/50.0
+			target[:phi] += line[4]/500.0
 			if !r.ik(target)
-				target[:x] += line[1]/20000.0
-		  		target[:y] -= line[2]/20000.0
-		   		target[:z] -= line[3]/20000.0
-				target[:phi] -= line[4]/500000.0
+				target[:x] += line[1]/50.0
+		  		target[:y] -= line[2]/50.0
+		   		target[:z] -= line[3]/50.0
+				target[:phi] -= line[4]/500.0
 			end
 			if line[0] == 1 and ! rebound
 				if first_time_click == 0
@@ -86,15 +86,15 @@ class Controller < SerialPort
 			line = line.map {|e| e.to_i}
 			rebound = (Time.now.to_f - last_click < 1)
 			begin
-			  	target[:x] -= line[1]/20000.0
-			  	target[:y] += line[2]/20000.0
-			   	target[:z] += line[3]/20000.0
-				target[:phi] += line[4]/500000.0
+			  	target[:x] -= line[1]/50.0
+			  	target[:y] += line[2]/50.0
+			   	target[:z] += line[3]/50.0
+				target[:phi] += line[4]/1000.0
 				if !r.ik(target)
-					target[:x] += line[1]/20000.0
-			  		target[:y] -= line[2]/20000.0
-			   		target[:z] -= line[3]/20000.0
-					target[:phi] -= line[4]/500000.0
+					target[:x] += line[1]/50.0
+			  		target[:y] -= line[2]/50.0
+			   		target[:z] -= line[3]/50.0
+					target[:phi] -= line[4]/1000.0
 				end
 			#end
 			if line[0] == 1 and ! rebound
@@ -135,6 +135,7 @@ class Controller < SerialPort
 		#STDIN.gets
 		crossjoints = YAML::load_file(filename)
 		last_time = 0.0
+		#self.print "S"
 		crossjoints.each do |cj|
 			v.bodies.each_with_index do |b, i|
 				b.theta = cj[:joints][i].to_deg
@@ -142,20 +143,21 @@ class Controller < SerialPort
 			for i in 0..3 do
 				joint = (cj[:joints][i].to_deg*100.0).to_i
 				if joint < 0
-				    #STDOUT.print((-joint/256*2).to_i.chr)
-					self.print((-joint/256*2).to_i.chr)
-					#STDOUT.print " "
+				    #STDOUT.print((-joint/256+100).to_i)
+					self.print((-joint/256+100).to_i.chr)
+					#STDOUT.print "+"
 				else
-					#STDOUT.print((joint/256).to_i.chr) 
+					#STDOUT.print((joint/256).to_i) 
 					self.print((joint/256).to_i.chr)
-					#STDOUT.print " "
+					#STDOUT.print "+"
 				end	
-				#STDOUT.print((joint%256).to_i.chr)
+				#STDOUT.print((joint%256).to_i)
 				self.print((joint%256).to_i.chr)
 				#STDOUT.print "\n"
 			end
-			sleep cj[:time]-last_time
+			sleep (cj[:time]-last_time)
 			last_time = cj[:time]
+		STDOUT.puts i	
 		end
 		self.print "M"
 	end
