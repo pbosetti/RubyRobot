@@ -14,13 +14,13 @@ require "lib/arduino"
 require "lib/Dynamics"
 require "lib/optimizer"
 
-%w[ABRT HUP INT TERM].each do |s|
-  Signal.trap(s) do
-    running = false
-	end
-end
+#%w[ABRT HUP INT TERM].each do |s|
+#  Signal.trap(s) do
+#    running = false
+#	end
+#end
 
-options = {:automatic => true, :shape => nil, :filename => "", :noarduino => false, :optimized => true}
+options = {:automatic => true, :shape => nil, :filename => "", :optimized => true, :noarduino => false, :onlyruby => false}
 
 opts = OptionParser.new do |opts|
   opts.on("-m","--manual filename", String, "\nAble the manual mode, capture the crosspoint when you press Joystick button 1 and end the data capture when you press the Joystick button 8. At the end of data capture create the yaml file (default crosspoints.yaml).\n") do |f|
@@ -78,12 +78,19 @@ opts = OptionParser.new do |opts|
 	opts.on("-o", "--optimizer", "\nIf you want to optimize the path contained in the yaml file.\n") do |f|
 		options[:optimized] = false
 	end
-	opts.on("--no-arduino", String, "\nIf you want to work with only the simulator, without the robot.\n") do |f|
+	opts.on("-r", "--onlyruby", String, "\nIf you want to work with only the simulator, without the robot.\n") do |f|
+		options[:onlyruby] = true
+	end
+	opts.on("-n", "--no-arduino", String, "\nIf you don't want to connect the Arduino microcontroller.\n") do |f|
 		options[:noarduino] = true
 	end
 end
-
-opts.parse! ARGV
+begin
+	opts.parse! ARGV
+rescue
+	STDOUT.puts "Error: #{$!} "
+	exit(0)
+end
 
 puts options.inspect
 #gets
@@ -94,37 +101,45 @@ include Arduino
 include InverseKinematicsAndDynamics
 include Optimizer
 
-if !options[:noarduino]
+begin
+	baudrate = 57600
+	usbport  = "/dev/ttyUSB0"
+	arduino  = Controller.new(usbport,baudrate,!options[:noarduino])
+rescue
 	begin
 		baudrate = 57600
-		usbport  = "/dev/ttyUSB0"
-		arduino  = Controller.new(usbport,baudrate)
+		usbport  = "/dev/ttyUSB1"
+		arduino  = Controller.new(usbport,baudrate,!options[:noarduino])
 	rescue
 		warn "ERROR: No device connected."
 		exit(0)
 	end
-	puts "Connected with #{usbport} @#{baudrate} bps"
+end
+puts "Connected with #{usbport} @#{baudrate} bps"
+
+if options[:onlyruby]
+	arduino.print "R"
 end
 
 STDOUT.sync = true
 
 config = {
-  :l => [0.0, 350.0 , 350.0, 50.0], #[mm]
-  :home => {:x=>350.0, :y => 350.0, :z => -50.0, :phi => -90.0.to_rad},
+  :l => [0.0, 0.25 , 0.25, 0.05], #[m]
+  :home => {:x=>0.25, :y => 0.25, :z => -0.05, :phi => -90.0.to_rad},
   :limits => [
-    -180.0.to_rad..180.0.to_rad,
-    -180.0.to_rad..180.0.to_rad,
-    -180.0.to_rad..180.0.to_rad,
-    -180.0.to_rad..180.0.to_rad
+    20.0.to_rad..160.0.to_rad,
+    10.0.to_rad..150.0.to_rad,
+    -135.0.to_rad..-1.0.to_rad,
+    -120.0.to_rad..20.0.to_rad
   ],
   :psi => -90.0.to_rad,
   :vmax => [7.80773041, 7.587469858, 10.471975513, 7.801621757], #[rad/s]
-  :tmax => [12900.0, 24400.0, 7800.0, 1300.0], # [Nmm]
+  :tmax => [1.29, 2.44, 0.78, 0.13], # [Nm]
   :m => [0.755, 0.0660, 0.0660, 0.0660],   # [kg]
-  :inertia => [[0.0019, 0.0030, 0.0030],  # Ix1, Iy1, Iz1 [kg mm4]
-  			   [20.87, 94.287, 94.287],  # Ix2, Iy2, Iz2 [kg mm4]
-  			   [20.87, 94.287, 94.287],  # Ix3, Iy3, Iz3 [kg mm4]
-  			   [2.98 , 2.74  , 2.74 ]], # Ix4, Iy4, Iz4 [kg mm4]
+  :inertia => [[0.0, 0.0, 0.0],  				 # Ix1, Iy1, Iz1 [kg m2]
+  			   [0.0000149, 0.000344, 0.000344],  # Ix2, Iy2, Iz2 [kg m2]
+  			   [0.0000149, 0.000344, 0.000344],  # Ix3, Iy3, Iz3 [kg m2]
+  			   [298.0*10**(-6), 274.0*10**(-6), 274.0*10**(-6)]], # Ix4, Iy4, Iz4 [kg m2]
   :mm => [0.2, 0.2, 0.15, 0.10], #[kg]
   :Rext => [0.0, 0.0, 0.0, 0.0],
   :Text => [0.0, 0.0, 0.0, 0.0]  
@@ -135,8 +150,8 @@ ai = [0,0,0,0]
 af = [0,0,0,0]
 vi = [0,0,0,0]
 vf = [0,0,0,0]
-tq = 0.05
-dT = 0.02
+tq = 0.01
+dT = 0.01
 target = config[:home]
 r.ik(target)
 joints = r.joints.map {|v| v.to_deg}
@@ -152,20 +167,20 @@ v.bodies << BoxBody.new(
   :color => [1,1,1,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a => r.l[1], 
+  :a => r.l[1]*1000, 
   :theta => joints[1], 
   :alpha => 0.0,
   :color => [1.0,0.8,0.8,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a =>r.l[2], 
+  :a =>r.l[2]*1000, 
   :theta => joints[2], 
   :alpha => 0.0, 
   :color => [0.8,1.0,0.8,0.9])
 v.bodies << BoxBody.new(
   :l => 0, 
-  :a =>r.l[3],
-  :w => 2, 
+  :a =>r.l[3]*1000,
+  #:w => 2, 
   :theta => joints[3], 
   :alpha => 0.0, 
   :color => [0.8,0.0,1.0,0.9])
@@ -199,8 +214,8 @@ if options[:shape] != nil
 	end
 	path = sh.create(param.merge({:rtm => rtm}))
 	t  = 0.0
-	dt = 0.1
-	T  = 10.0
+	dt = 0.05
+	T  = 3.0
 	points = Array.new()
 	crosspoints = Array.new(0,Hash.new)
 	while t <= T
@@ -219,7 +234,7 @@ if options[:shape] != nil
 	end
 	cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
 	
-	print "finish"
+	STDOUT.print "finish"
 	puts
 	print "Do you want to do the selected path? <y/n>: "
 	resp = STDIN.gets.chomp
