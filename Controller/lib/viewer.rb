@@ -72,9 +72,11 @@ class RobotViewer
     @y_last = -1
     @x_incr = 0
     @y_incr = 0
-    @scale_factor = 5.0
+    @scale_factor = 1.8 #5.0
     @modifiers = 0
     @draw = {:axes => true, :wireframe => true }
+    
+    @refresh_rate = 50.0 # Hz
     
     @x_pan = 0.0
     @y_pan = 0.0
@@ -84,8 +86,8 @@ class RobotViewer
     
     glutInit
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ALPHA)
-    glutInitWindowSize(500, 500) 
-    glutInitWindowPosition(100, 100)
+    glutInitWindowSize(700, 700) 
+    glutInitWindowPosition(0, 0)
     glutCreateWindow(@title)
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glShadeModel     GL_SMOOTH
@@ -278,6 +280,7 @@ Keystrokes:
   def idle
     lambda do
       glutPostRedisplay()
+      sleep 1.0/@refresh_rate
     end
   end  
   
