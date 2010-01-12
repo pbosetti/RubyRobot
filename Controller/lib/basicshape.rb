@@ -1,3 +1,6 @@
+# Created by Fabiano Giuliani on 2009-05-25.
+# Copyright (c) 2009 University of Trento. All rights reserved.
+
 # = Create a Basic Shape
 # With this module you can create a basic shape like:
 # - conical spiral

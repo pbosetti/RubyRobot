@@ -59,7 +59,7 @@ for (j=0; j<length; j++) {
    if (sol[i][j] < minlimits[j] || sol[i][j] > maxlimits[j])
      inrange *= 0;
 }
-if (sol[i][1] < 1.0 && sol[i][2] < 1.0 && sol[i][3] < 1.0)
+if (sol[i][1] < 0.1 && sol[i][2] < 0.1 && sol[i][3] < 0.1) //1.0
   inrange *= 0;
 if (inrange) {  
   for (j=0; j<length; j++) //{

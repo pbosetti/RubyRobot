@@ -6,6 +6,12 @@ require 'yaml'
 #include GSL::MultiMin
 #include Math
 
+class Float
+  TO_RAD = Math::PI/180.0
+  def to_rad; self * TO_RAD; end
+  def to_deg; self / TO_RAD; end
+end
+
 module Optimizer
 
 class PPOcubicspline

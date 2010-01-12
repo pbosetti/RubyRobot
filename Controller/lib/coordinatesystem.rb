@@ -1,3 +1,6 @@
+# Created by Fabiano Giuliani on 2009-05-25.
+# Copyright (c) 2009 University of Trento. All rights reserved.
+
 # = Operation with coordinate system
 # This module manage the cartesian axis and calculate the roto-traslation matrix.
 

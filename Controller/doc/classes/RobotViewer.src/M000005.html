@@ -5,14 +5,69 @@
 
 <html>
 <head>
-  <title>status (RobotViewer)</title>
+  <title>display (RobotViewer)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 106</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">status</span>
-    <span class="ruby-node">&quot;#{@x_last}, #{@y_last}&quot;</span>
+  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 115</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">display</span>
+    <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> 
+      <span class="ruby-identifier">glClear</span>(<span class="ruby-constant">GL_COLOR_BUFFER_BIT</span> <span class="ruby-operator">|</span> <span class="ruby-constant">GL_DEPTH_BUFFER_BIT</span> <span class="ruby-operator">|</span> <span class="ruby-constant">GL_ACCUM_BUFFER_BIT</span>)
+      <span class="ruby-identifier">glPushMatrix</span>()
+      <span class="ruby-identifier">glRotate</span>(<span class="ruby-ivar">@x_rot</span>, <span class="ruby-value">1</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+      <span class="ruby-identifier">glRotate</span>(<span class="ruby-ivar">@y_rot</span>, <span class="ruby-value">0</span>,<span class="ruby-value">1</span>,<span class="ruby-value">0</span>)
+      <span class="ruby-identifier">glRotate</span>(<span class="ruby-ivar">@z_rot</span>, <span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">1</span>)
+      <span class="ruby-identifier">glScale</span>(<span class="ruby-ivar">@scale_factor</span>, <span class="ruby-ivar">@scale_factor</span>, <span class="ruby-ivar">@scale_factor</span>)
+      
+      <span class="ruby-identifier">glPushMatrix</span>()         <span class="ruby-comment cmt"># Begin rotation 90° about X</span>
+      <span class="ruby-identifier">glRotate</span>(<span class="ruby-value">-90</span>, <span class="ruby-value">1</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)   <span class="ruby-comment cmt"># so to have Z axis pointing upward</span>
+      <span class="ruby-identifier">glPushMatrix</span>()
+      <span class="ruby-ivar">@bodies</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">b</span>,<span class="ruby-identifier">i</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">b</span>.<span class="ruby-identifier">draw</span>(<span class="ruby-ivar">@draw</span>)
+      <span class="ruby-keyword kw">end</span>
+      <span class="ruby-identifier">glPopMatrix</span>()
+      <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@draw</span>[<span class="ruby-identifier">:axes</span>]
+        <span class="ruby-identifier">glLineWidth</span>(<span class="ruby-value">1.0</span>)
+        <span class="ruby-identifier">glColor</span>(<span class="ruby-value">1</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span><span class="ruby-value">.66</span>)
+        <span class="ruby-identifier">glBegin</span>(<span class="ruby-constant">GL_LINES</span>)
+          <span class="ruby-identifier">glVertex</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+          <span class="ruby-identifier">glVertex</span>(<span class="ruby-ivar">@axes_length</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glEnd</span>()
+        <span class="ruby-identifier">glPushMatrix</span>()
+        <span class="ruby-identifier">glTranslate</span>(<span class="ruby-ivar">@axes_length</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glRotate</span>(<span class="ruby-value">90</span>,<span class="ruby-value">0</span>,<span class="ruby-value">1</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glutSolidCone</span>(<span class="ruby-value">20</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>, <span class="ruby-value">30</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>, <span class="ruby-value">20</span>, <span class="ruby-value">1</span>)
+        <span class="ruby-identifier">glPopMatrix</span>()
+        
+        <span class="ruby-identifier">glColor</span>(<span class="ruby-value">0</span>,<span class="ruby-value">1</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span><span class="ruby-value">.66</span>)
+        <span class="ruby-identifier">glBegin</span>(<span class="ruby-constant">GL_LINES</span>)
+          <span class="ruby-identifier">glVertex</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+          <span class="ruby-identifier">glVertex</span>(<span class="ruby-value">0</span>,<span class="ruby-ivar">@axes_length</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glEnd</span>()
+        <span class="ruby-identifier">glPushMatrix</span>()
+        <span class="ruby-identifier">glTranslate</span>(<span class="ruby-value">0</span>,<span class="ruby-ivar">@axes_length</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glRotate</span>(<span class="ruby-value">-90</span>,<span class="ruby-value">1</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glutSolidCone</span>(<span class="ruby-value">20</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>, <span class="ruby-value">30</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>, <span class="ruby-value">20</span>, <span class="ruby-value">1</span>)
+        <span class="ruby-identifier">glPopMatrix</span>()
+        
+        <span class="ruby-identifier">glColor</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">1</span>,<span class="ruby-value">0</span><span class="ruby-value">.66</span>)
+        <span class="ruby-identifier">glBegin</span>(<span class="ruby-constant">GL_LINES</span>)
+          <span class="ruby-identifier">glVertex</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">0</span>)
+          <span class="ruby-identifier">glVertex</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-ivar">@axes_length</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>)
+        <span class="ruby-identifier">glEnd</span>()
+        <span class="ruby-identifier">glPushMatrix</span>()
+        <span class="ruby-identifier">glTranslate</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-ivar">@axes_length</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>)
+        <span class="ruby-identifier">glRotate</span>(<span class="ruby-value">0</span>,<span class="ruby-value">0</span>,<span class="ruby-value">1</span>,<span class="ruby-value">0</span>)
+        <span class="ruby-identifier">glutSolidCone</span>(<span class="ruby-value">20</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>, <span class="ruby-value">30</span><span class="ruby-operator">/</span><span class="ruby-ivar">@scale_factor</span>, <span class="ruby-value">20</span>, <span class="ruby-value">1</span>)
+        <span class="ruby-identifier">glPopMatrix</span>()
+      <span class="ruby-keyword kw">end</span>
+      
+      <span class="ruby-identifier">glPopMatrix</span>()  <span class="ruby-comment cmt"># end rotation about X</span>
+      <span class="ruby-identifier">glPopMatrix</span>()
+      <span class="ruby-identifier">glFlush</span>()
+      <span class="ruby-identifier">glutSwapBuffers</span>()
+    <span class="ruby-keyword kw">end</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

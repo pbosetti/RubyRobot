@@ -5,50 +5,15 @@
 
 <html>
 <head>
-  <title>new (RobotViewer)</title>
+  <title>run (RobotViewer)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 66</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">args</span>={})
-    <span class="ruby-ivar">@axes_length</span> = <span class="ruby-value">100</span>
-    <span class="ruby-ivar">@x_rot</span> = <span class="ruby-value">45</span>
-    <span class="ruby-ivar">@y_rot</span> = <span class="ruby-value">-135</span>
-    <span class="ruby-ivar">@z_rot</span> = <span class="ruby-value">0</span>
-    <span class="ruby-ivar">@x_last</span> = <span class="ruby-value">-1</span>
-    <span class="ruby-ivar">@y_last</span> = <span class="ruby-value">-1</span>
-    <span class="ruby-ivar">@x_incr</span> = <span class="ruby-value">0</span>
-    <span class="ruby-ivar">@y_incr</span> = <span class="ruby-value">0</span>
-    <span class="ruby-ivar">@scale_factor</span> = <span class="ruby-value">5.0</span>
-    <span class="ruby-ivar">@modifiers</span> = <span class="ruby-value">0</span>
-    <span class="ruby-ivar">@draw</span> = {<span class="ruby-identifier">:axes</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">true</span>, <span class="ruby-identifier">:wireframe</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">true</span> }
-    
-    <span class="ruby-ivar">@x_pan</span> = <span class="ruby-value">0</span><span class="ruby-value">.0</span>
-    <span class="ruby-ivar">@y_pan</span> = <span class="ruby-value">0</span><span class="ruby-value">.0</span>
-        
-    <span class="ruby-ivar">@bodies</span> = []
-    <span class="ruby-ivar">@title</span>  = <span class="ruby-identifier">args</span>[<span class="ruby-identifier">:title</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">TITLE</span>
-    
-    <span class="ruby-identifier">glutInit</span>
-    <span class="ruby-identifier">glutInitDisplayMode</span>(<span class="ruby-constant">GLUT_DOUBLE</span> <span class="ruby-operator">|</span> <span class="ruby-constant">GLUT_RGBA</span> <span class="ruby-operator">|</span> <span class="ruby-constant">GLUT_DEPTH</span> <span class="ruby-operator">|</span> <span class="ruby-constant">GLUT_ALPHA</span>)
-    <span class="ruby-identifier">glutInitWindowSize</span>(<span class="ruby-value">500</span>, <span class="ruby-value">500</span>) 
-    <span class="ruby-identifier">glutInitWindowPosition</span>(<span class="ruby-value">100</span>, <span class="ruby-value">100</span>)
-    <span class="ruby-identifier">glutCreateWindow</span>(<span class="ruby-ivar">@title</span>)
-    <span class="ruby-identifier">glClearColor</span>(<span class="ruby-value">0</span><span class="ruby-value">.0</span>, <span class="ruby-value">0</span><span class="ruby-value">.0</span>, <span class="ruby-value">0</span><span class="ruby-value">.0</span>, <span class="ruby-value">0</span><span class="ruby-value">.0</span>)
-    <span class="ruby-identifier">glShadeModel</span>     <span class="ruby-constant">GL_SMOOTH</span>
-    <span class="ruby-identifier">glEnable</span>         <span class="ruby-constant">GL_DEPTH_TEST</span>
-    <span class="ruby-identifier">glEnable</span>         <span class="ruby-constant">GL_BLEND</span>
-    <span class="ruby-identifier">glEnable</span>         <span class="ruby-constant">GL_LINE_SMOOTH</span>
-    <span class="ruby-identifier">glBlendFunc</span>      <span class="ruby-constant">GL_SRC_ALPHA</span>, <span class="ruby-constant">GL_ONE_MINUS_SRC_ALPHA</span>
-    <span class="ruby-identifier">glutDisplayFunc</span>  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">display</span> 
-    <span class="ruby-identifier">glutReshapeFunc</span>  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">reshape</span> 
-    <span class="ruby-identifier">glutKeyboardFunc</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">keyboard</span>
-    <span class="ruby-identifier">glutMotionFunc</span>   <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">motion</span>  
-    <span class="ruby-identifier">glutMouseFunc</span>    <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">mouse</span>  
-    <span class="ruby-identifier">glutIdleFunc</span>     <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">idle</span> 
-    <span class="ruby-identifier">glutSpecialFunc</span>  <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">special</span>
-    <span class="ruby-ivar">@w</span>, <span class="ruby-ivar">@h</span> = <span class="ruby-identifier">glutGet</span>(<span class="ruby-constant">GLUT_WINDOW_WIDTH</span>), <span class="ruby-identifier">glutGet</span>(<span class="ruby-constant">GLUT_WINDOW_HEIGHT</span>)
+  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 110</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">run</span>
+    <span class="ruby-identifier">glutMainLoop</span>()
+    <span class="ruby-keyword kw">self</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

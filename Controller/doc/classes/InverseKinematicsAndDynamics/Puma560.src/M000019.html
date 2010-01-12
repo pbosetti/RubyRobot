@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/ik.rb, line 58</span>
+  <pre><span class="ruby-comment cmt"># File lib/ik.rb, line 69</span>
    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">ik</span>(<span class="ruby-identifier">pose</span>=<span class="ruby-ivar">@pose</span>)
       <span class="ruby-identifier">theta</span> = <span class="ruby-identifier">atan2</span>(<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:y</span>],<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:x</span>])
       <span class="ruby-identifier">r</span>     = <span class="ruby-identifier">sqrt</span>(<span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:x</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span><span class="ruby-operator">+</span><span class="ruby-identifier">pose</span>[<span class="ruby-identifier">:y</span>]<span class="ruby-operator">**</span><span class="ruby-value">2</span>)
@@ -36,7 +36,7 @@
         <span class="ruby-identifier">cumError</span>[<span class="ruby-value">1</span>] <span class="ruby-operator">+=</span> (<span class="ruby-ivar">@joints</span>[<span class="ruby-identifier">i</span>]<span class="ruby-operator">-</span><span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>][<span class="ruby-identifier">i</span>])<span class="ruby-operator">**</span><span class="ruby-value">2</span>         
       <span class="ruby-keyword kw">end</span>
       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">cumError</span>[<span class="ruby-value">1</span>] <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">cumError</span>[<span class="ruby-value">0</span>]
-        <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">inlimits?</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>]
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">inlimits?</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>]
                 <span class="ruby-ivar">@joints</span> = <span class="ruby-identifier">sol</span>[<span class="ruby-value">0</span>]
                 <span class="ruby-ivar">@pose</span> = <span class="ruby-identifier">pose</span>
                 <span class="ruby-ivar">@soln</span> = <span class="ruby-value">0</span>
@@ -45,10 +45,10 @@
                 <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>
         <span class="ruby-keyword kw">end</span>      
       <span class="ruby-keyword kw">else</span>      
-        <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">inlimits?</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>]
+        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">inlimits?</span> <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>]
                 <span class="ruby-ivar">@joints</span> = <span class="ruby-identifier">sol</span>[<span class="ruby-value">1</span>]
                 <span class="ruby-ivar">@pose</span> = <span class="ruby-identifier">pose</span>                    
-                <span class="ruby-ivar">@soln</span> = <span class="ruby-value">0</span>
+                <span class="ruby-ivar">@soln</span> = <span class="ruby-value">1</span>
                 <span class="ruby-keyword kw">return</span> <span class="ruby-value">1</span>
         <span class="ruby-keyword kw">else</span>             
                 <span class="ruby-keyword kw">return</span> <span class="ruby-value">0</span>
