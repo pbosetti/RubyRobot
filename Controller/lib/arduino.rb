@@ -15,14 +15,26 @@ BAUDRATE = 57600
 
 SERVOS = {:base => 1, :shoulder => 2, :elbow => 3, :wrist=> 4} # servo number
 
-class Controller < SerialPort	
+class Controller
 
-	def initialize(usbport = USBPORT, baudrate = BAUDRATEop)
-		super(usbport, baudrate, 8, 1, SerialPort::NONE) if !noarduino
+	def initialize(usbport = USBPORT, baudrate = BAUDRATE, arduino = true)
+		@arduino = SerialPort.new(usbport, baudrate, 8, 1, SerialPort::NONE) if arduino 
+	end
+	
+	def print (string)
+		@arduino.print string
+	end
+	
+	def puts (string)
+		@arduino.puts string
+	end
+	
+	def gets
+		return @arduino.gets
 	end
 	
 	def data_capture(r,target,v,filename)
-		self.print "M"
+		@arduino.print "M"
 		first_time_click = 0.0
 		running = true
 		p = Array.new(1)
@@ -31,19 +43,19 @@ class Controller < SerialPort
 		crosspoints = Array.new(0,Hash.new)
 		crossjoints = Array.new(0,Hash.new)
 		while running do
-		  line = self.gets.split
+		  line = @arduino.gets.split
 		  line = line.map {|e| e.to_i}
 		  rebound = (Time.now.to_f - last_click < 1)
 		  begin
-		  	target[:x] -= line[1]/50.0
-		  	target[:y] += line[2]/50.0
-		   	target[:z] += line[3]/50.0
-			target[:phi] += line[4]/500.0
+		  	target[:x] -= line[1]/50000.0
+		  	target[:y] += line[2]/50000.0
+		   	target[:z] += line[3]/50000.0
+			target[:phi] += line[4]/1000000.0
 			if !r.ik(target)
-				target[:x] += line[1]/50.0
-		  		target[:y] -= line[2]/50.0
-		   		target[:z] -= line[3]/50.0
-				target[:phi] -= line[4]/500.0
+				target[:x] += line[1]/50000.0
+		  		target[:y] -= line[2]/50000.0
+		   		target[:z] -= line[3]/50000.0
+				target[:phi] -= line[4]/1000000.0
 			end
 			if line[0] == 1 and ! rebound
 				if first_time_click == 0
@@ -57,7 +69,7 @@ class Controller < SerialPort
 				end
 				STDOUT.print r.joints, " "
 			end			
-			update_sim(r,v)	
+			update_sim(r.joints,v)	
 			
 			if line[0] == 8 and ! rebound
 				File.open(filename, "w") {|f| YAML.dump(crosspoints, f)}
@@ -75,14 +87,14 @@ class Controller < SerialPort
 	end
 	
 	def get_rtm (r,target,v)
-		self.print "M"
+		@arduino.print "M"
 		first_time_click = 0.0
 		running = true
 		line = [0,0,0,0,0]
 		now = last_click = Time.now.to_f
 		p = Array.new(0)
 		while running
-			line = self.gets.split
+			line = @arduino.gets.split
 			line = line.map {|e| e.to_i}
 			rebound = (Time.now.to_f - last_click < 1)
 			begin
@@ -118,7 +130,7 @@ class Controller < SerialPort
 					end	
 				end	
 			end
-			update_sim(r,v)
+			update_sim(r.joints,v)
 			rescue
 				STDOUT.puts "Error: #{$!} #{line.inspect}"
 		  	end
@@ -129,44 +141,47 @@ class Controller < SerialPort
 	def automatic_mode(r,v,filename)
 		STDOUT.print "Press <Enter> to begin the simulation."
 		STDIN.gets
-		self.print "A" # AUTOMATIC MODE
+		@arduino.print "A" if @arduino # AUTOMATIC MODE
 		sleep 1
-		#STDOUT.puts filename
-		#STDIN.gets
 		crossjoints = YAML::load_file(filename)
 		last_time = 0.0
-		#self.print "S"
+		time = 0.0
+		#@arduino.print "S"
 		crossjoints.each do |cj|
-			v.bodies.each_with_index do |b, i|
-				b.theta = cj[:joints][i].to_deg
-			end
+		t_ok = false
+ 		sthread = Thread.new { sleep cj[:time]-last_time; t_ok = true }		
+			update_sim(cj[:joints],v)
+			time += cj[:time]-last_time
+			STDOUT.print time
+			if @arduino
 			for i in 0..3 do
-				joint = (cj[:joints][i].to_deg*100.0).to_i
+				joint = (cj[:joints][i]*100.0).to_i				
 				if joint < 0
 				    #STDOUT.print((-joint/256+100).to_i)
-					self.print((-joint/256+100).to_i.chr)
+					@arduino.print((-joint/256+100).to_i.chr)
 					#STDOUT.print "+"
 				else
 					#STDOUT.print((joint/256).to_i) 
-					self.print((joint/256).to_i.chr)
+					@arduino.print((joint/256).to_i.chr)
 					#STDOUT.print "+"
 				end	
 				#STDOUT.print((joint%256).to_i)
-				self.print((joint%256).to_i.chr)
+				@arduino.print((joint%256).to_i.chr)
 				#STDOUT.print "\n"
 			end
-			sleep (cj[:time]-last_time)
+			end
+			STDOUT.puts t_ok ? "+" : "-"
 			last_time = cj[:time]
-		STDOUT.puts i	
+		sthread.join
 		end
-		self.print "M"
+		@arduino.print "M" if @arduino
 	end
 
 private
 
-	def update_sim(r,v)
+	def update_sim(joints,v)
 		v.bodies.each_with_index do |b, i|
-			b.theta = r.joints[i].to_deg
+			b.theta = joints[i].to_deg
 		end
 	end
 	
