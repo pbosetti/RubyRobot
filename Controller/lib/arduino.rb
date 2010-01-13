@@ -5,8 +5,10 @@ require 'rubygems'
 require 'serialport'
 require "lib/coordinatesystem"
 require "lib/ik"
+require "lib/optimizer"
 
 include CoordinateSystem
+include Optimizer
 
 module Arduino
 
@@ -52,10 +54,10 @@ class Controller
 		   	target[:z] += line[3]/50000.0
 			target[:phi] += line[4]/1000000.0
 			if !r.ik(target)
-				target[:x] += line[1]/50000.0
-		  		target[:y] -= line[2]/50000.0
-		   		target[:z] -= line[3]/50000.0
-				target[:phi] -= line[4]/1000000.0
+				target[:x] += line[1]/49900.0
+		  		target[:y] -= line[2]/49900.0
+		   		target[:z] -= line[3]/49900.0
+				target[:phi] -= line[4]/999900.0
 			end
 			if line[0] == 1 and ! rebound
 				if first_time_click == 0
@@ -98,22 +100,22 @@ class Controller
 			line = line.map {|e| e.to_i}
 			rebound = (Time.now.to_f - last_click < 1)
 			begin
-			  	target[:x] -= line[1]/50.0
-			  	target[:y] += line[2]/50.0
-			   	target[:z] += line[3]/50.0
-				target[:phi] += line[4]/1000.0
+			  	target[:x] -= line[1]/50000.0
+			  	target[:y] += line[2]/50000.0
+			   	target[:z] += line[3]/50000.0
+				target[:phi] += line[4]/1000000.0
 				if !r.ik(target)
-					target[:x] += line[1]/50.0
-			  		target[:y] -= line[2]/50.0
-			   		target[:z] -= line[3]/50.0
-					target[:phi] -= line[4]/1000.0
+					target[:x] += line[1]/49900.0
+			  		target[:y] -= line[2]/49900.0
+			   		target[:z] -= line[3]/49900.0
+					target[:phi] -= line[4]/999900.0
 				end
 			#end
 			if line[0] == 1 and ! rebound
 				STDOUT.print "Point n°"
 				STDOUT.print p.length+1
 				STDOUT.print ": "
-				STDOUT.print r.joints, " "
+				STDOUT.print target.inspect
 				STDOUT.puts
 				if first_time_click == 0.0
 					first_time_click =Time.now.to_f
@@ -142,42 +144,83 @@ class Controller
 		STDOUT.print "Press <Enter> to begin the simulation."
 		STDIN.gets
 		@arduino.print "A" if @arduino # AUTOMATIC MODE
-		sleep 1
-		crossjoints = YAML::load_file(filename)
-		last_time = 0.0
-		time = 0.0
-		#@arduino.print "S"
-		crossjoints.each do |cj|
-		t_ok = false
- 		sthread = Thread.new { sleep cj[:time]-last_time; t_ok = true }		
-			update_sim(cj[:joints],v)
-			time += cj[:time]-last_time
-			STDOUT.print time
-			if @arduino
-			for i in 0..3 do
-				joint = (cj[:joints][i]*100.0).to_i				
-				if joint < 0
-				    #STDOUT.print((-joint/256+100).to_i)
-					@arduino.print((-joint/256+100).to_i.chr)
-					#STDOUT.print "+"
-				else
-					#STDOUT.print((joint/256).to_i) 
-					@arduino.print((joint/256).to_i.chr)
-					#STDOUT.print "+"
-				end	
-				#STDOUT.print((joint%256).to_i)
-				@arduino.print((joint%256).to_i.chr)
-				#STDOUT.print "\n"
+		fn = filename[0..filename.length-10]
+		fn = fn + ".yaml"
+		crosspoints = YAML::load_file(fn)
+		path = Array.new(3)
+		path[1] = YAML::load_file(filename)
+		path[0] = YAML::load_file(go_here(r,r.pose,crosspoints[0]))
+		path[2] = YAML::load_file(go_here(r,crosspoints[crosspoints.length-1],r.home))
+		path.each do |crossjoints|
+			last_time = 0.0
+			time = 0.0
+			#@arduino.print "S"
+			crossjoints.each do |cj|
+			t_ok = false
+	 		sthread = Thread.new { sleep cj[:time]-last_time; t_ok = true }		
+				update_sim(cj[:joints],v)
+				time += cj[:time]-last_time
+				STDOUT.print time
+				if @arduino
+				for i in 0..3 do
+					joint = (cj[:joints][i]*100.0).to_i				
+					if joint < 0
+						#STDOUT.print((-joint/256+100).to_i)
+						@arduino.print((-joint/256+100).to_i.chr)
+						#STDOUT.print "+"
+					else
+						#STDOUT.print((joint/256).to_i) 
+						@arduino.print((joint/256).to_i.chr)
+						#STDOUT.print "+"
+					end	
+					#STDOUT.print((joint%256).to_i)
+					@arduino.print((joint%256).to_i.chr)
+					#STDOUT.print "\n"
+				end
+				end
+				STDOUT.puts t_ok ? "+" : "-"
+				last_time = cj[:time]
+			sthread.join
 			end
-			end
-			STDOUT.puts t_ok ? "+" : "-"
-			last_time = cj[:time]
-		sthread.join
-		end
+		end	
 		@arduino.print "M" if @arduino
 	end
 
 private
+
+	def go_here(r,first_point,second_point)
+		ai = [0,0,0,0]
+		af = [0,0,0,0]
+		vi = [0,0,0,0]
+		vf = [0,0,0,0]
+		tq = 0.01
+		dT = 0.01
+		STDOUT.puts first_point.inspect
+		STDOUT.puts second_point.inspect
+		#STDIN.gets
+		first_point.delete(:time) if first_point.has_key? :time
+		second_point.delete(:time) if second_point.has_key? :time
+		half_point = Array.new(2)
+		totaltime  = Math::sqrt((second_point[:x]-first_point[:x])**2+
+								(second_point[:y]-first_point[:y])**2+
+								(second_point[:z]-first_point[:z])**2)/0.10 #[0.10 m/s]
+		first_point  = {:time => 0.0}.merge(first_point)
+		half_point[0] = {:x   => first_point[:x]+(second_point[:x]-first_point[:x])/3.0,
+					     :y   => first_point[:y]+(second_point[:y]-first_point[:y])/3.0,
+					     :z   => first_point[:z]+(second_point[:z]-first_point[:z])/3.0,
+					     :phi => first_point[:phi]+(second_point[:phi]-first_point[:phi])/3.0}
+		half_point[1]   = {:x   => first_point[:x]+(second_point[:x]-first_point[:x])*2.0/3.0,
+					       :y   => first_point[:y]+(second_point[:y]-first_point[:y])*2.0/3.0,
+					       :z   => first_point[:z]+(second_point[:z]-first_point[:z])*2.0/3.0,
+		    			   :phi => first_point[:phi]+(second_point[:phi]-first_point[:phi])*2.0/3.0}			    
+		half_point[0]   = {:time => totaltime*0.33}.merge(half_point[0])
+		half_point[1]   = {:time => totaltime*0.66}.merge(half_point[1])
+		second_point = {:time => totaltime}.merge(second_point)
+		points = [first_point, half_point[0], half_point[1], second_point];
+		File.open("temp.yaml", "w") {|f| YAML.dump(points, f)}
+		cubicspline = PPOcubicspline.new(r,"temp.yaml",vi,ai,vf,af,tq,dT)
+		return cubicspline.optfn
+	end
 
 	def update_sim(joints,v)
 		v.bodies.each_with_index do |b, i|
