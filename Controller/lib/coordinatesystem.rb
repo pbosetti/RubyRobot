@@ -88,9 +88,9 @@ class CartesianAxis
 # Returns a roto-traslation matrix of this CaertesianAxis class.
 	def initialize (p0,p1,p2)
 		@p0 = p0
-		plane = Plane.new(p0,p1,p2)
+		@plane = Plane.new(p0,p1,p2)
 		@vx = (p1-p0).normalize
-		@vz = plane.ortho_vector(p0)
+		@vz = plane.ortho_vector.normalize
 		@vy = Point.new([@vx[2]*@vz[1]-@vx[1]*@vz[2] , @vx[0]*@vz[2]-@vz[0]*@vx[2] , @vz[0]*@vx[1]-@vx[0]*@vz[1]]).normalize
 		@rtm = Matrix.columns [@vx.push(0),@vy.push(0),@vz.push(0),@p0.push(1)]
 	end
@@ -104,15 +104,15 @@ class Plane
 
 # Returns the plane coefficients from 3 Points.	
 	def initialize(p1,p2,p3)
-		@coeff = {:a => p2[1]*p3[2]-p2[1]*p1[2]-p1[1]*p3[2]-p2[2]*p3[1]+p2[2]*p1[1]+p1[2]*p3[1],
-				  :b => -p2[0]*p3[2]+p2[0]*p1[2]-p3[0]*p1[2]+p3[0]*p2[2]+p1[0]*p3[2]-p1[0]*p2[2],
-				  :c => -p3[0]*p2[1]+p2[0]*p3[1]+p1[0]*p2[1]-p2[0]*p1[1]+p3[0]*p1[1]-p1[0]*p3[1],
-				  :d => p3[0]*p2[1]*p1[2]-p3[0]*p2[2]*p1[1]-p2[0]*p1[2]*p3[1]-p1[0]*p2[1]*p3[2]+p2[0]*p1[1]*p3[2]+p1[0]*p3[1]*p2[2] }	  
+		@coeff = {:a => p1[2]*p3[1]-p3[1]*p2[2]-p1[1]*p3[2]+p3[2]*p2[1]+p2[2]*p1[1]-p2[1]*p1[2],
+				  :b => -p1[2]*p2[0]+p2[0]*p3[2]-p1[0]*p3[2]+p1[0]*p2[2]+p1[2]*p3[0]-p2[2]*p3[0],
+				  :c => -p1[0]*p3[1]-p1[1]*p2[0]+p1[1]*p3[0]+p1[0]*p2[1]+p2[0]*p3[1]-p2[1]*p3[0],
+				  :d => -p1[0]*p3[1]*p2[2]-p1[1]*p2[0]*p3[2]+p1[1]*p3[0]*p2[2]+p1[0]*p3[2]*p2[1]+p1[2]*p2[0]*p3[1]-p1[2]*p3[0]*p2[1]}	  
 	end
 
-# Returns the orthogonal vector of the Plane traslated in <b>point</b> coordinates.
-	def ortho_vector(point)
-		v = Point.new([point[0]+@coeff[:a],point[1]+@coeff[:b],point[2]+@coeff[:c]])
+# Returns the orthogonal vector of the Plane.
+	def ortho_vector()
+		v = Point.new([@coeff[:a],@coeff[:b],@coeff[:c]])
 		return v.normalize
 	end
 	
@@ -126,9 +126,9 @@ require 'matrix'
 require 'coordinatesystem'
 include CoordinateSystem
 
-p0 = Point.new([5.0 , 0.0 , -1.0])
-p1 = Point.new([1.0 , 2.0 , -3.0])
-p2 = Point.new([-1.0 , 1.0 , 1.0])
+p0 = Point.new([0.250 , 0.250 , -0.05])
+p1 = Point.new([0.22 , 0.25 , -0.05])
+p2 = Point.new([0.22 , 0.3 , -0.05])
 
 t1 = CartesianAxis.new(p0,p1,p2)
 puts t1.rtm
