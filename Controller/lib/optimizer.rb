@@ -27,15 +27,14 @@ class PPOcubicspline
 			if r.ik(cp)
 				joints = r.joints[0..4]
 				joints << cj
-				puts "joints = #{joints}"
 				crossjoints << joints
 		  	else	
-		  		puts "Out of range!" 
+		  		STDOUT.puts "Out of range!" 
 			end	
 		end		
-		puts crossjoints
+		#puts crossjoints
 		np = crossjoints.length
-		puts np
+		puts "#{np} points"
 		m    = Matrix.rows(crossjoints)
 	
 	optimized = false

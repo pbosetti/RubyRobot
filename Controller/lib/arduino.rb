@@ -147,6 +147,9 @@ class Controller
 		fn = filename[0..filename.length-10]
 		fn = fn + ".yaml"
 		crosspoints = YAML::load_file(fn)
+		#STDOUT.puts "pose = #{r.pose}"
+		#STDOUT.puts "home = #{r.home}"
+		#STDIN.gets
 		path = Array.new(3)
 		path[1] = YAML::load_file(filename)
 		path[0] = YAML::load_file(go_here(r,r.pose,crosspoints[0]))
@@ -195,8 +198,8 @@ private
 		vf = [0,0,0,0]
 		tq = 0.01
 		dT = 0.01
-		STDOUT.puts first_point.inspect
-		STDOUT.puts second_point.inspect
+		#STDOUT.puts first_point.inspect
+		#STDOUT.puts second_point.inspect
 		#STDIN.gets
 		first_point.delete(:time) if first_point.has_key? :time
 		second_point.delete(:time) if second_point.has_key? :time
@@ -204,6 +207,7 @@ private
 		totaltime  = Math::sqrt((second_point[:x]-first_point[:x])**2+
 								(second_point[:y]-first_point[:y])**2+
 								(second_point[:z]-first_point[:z])**2)/0.10 #[0.10 m/s]
+		totaltime = 0.5 if totaltime < 0.5						
 		first_point  = {:time => 0.0}.merge(first_point)
 		half_point[0] = {:x   => first_point[:x]+(second_point[:x]-first_point[:x])/3.0,
 					     :y   => first_point[:y]+(second_point[:y]-first_point[:y])/3.0,
@@ -217,6 +221,7 @@ private
 		half_point[1]   = {:time => totaltime*0.66}.merge(half_point[1])
 		second_point = {:time => totaltime}.merge(second_point)
 		points = [first_point, half_point[0], half_point[1], second_point];
+		STDOUT.puts points.inspect
 		File.open("temp.yaml", "w") {|f| YAML.dump(points, f)}
 		cubicspline = PPOcubicspline.new(r,"temp.yaml",vi,ai,vf,af,tq,dT)
 		return cubicspline.optfn

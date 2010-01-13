@@ -144,7 +144,8 @@ config = {
   :Rext => [0.0, 0.0, 0.0, 0.0],
   :Text => [0.0, 0.0, 0.0, 0.0]  
 }
-r = Puma560.new(config)
+r  = Puma560.new(config)
+r2 = Puma560.new(config)
 
 ai = [0,0,0,0]
 af = [0,0,0,0]
@@ -153,7 +154,9 @@ vf = [0,0,0,0]
 tq = 0.01
 dT = 0.05
 
-r.ik(config[:home])
+target = config[:home]
+r.ik(target)
+r2.ik(target)
 joints = r.joints.map {|v| v.to_deg}
 
 v = RobotViewer.new
@@ -194,7 +197,7 @@ if options[:shape] != nil
 	resp = STDIN.gets.chomp
 	puts
 	if resp == "y"
-		rtm = arduino.get_rtm(r,r.home,v)
+		rtm = arduino.get_rtm(r,target,v)
 	else
 		rtm = Matrix.identity(4)
 	end
@@ -232,9 +235,10 @@ if options[:shape] != nil
 		end	
 		File.open(options[:filename], "w") {|f| YAML.dump(crosspoints, f)}
 	end
-	cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
 	
-	STDOUT.print "finish"
+	cubicspline = PPOcubicspline.new(r2,options[:filename],vi,ai,vf,af,tq,dT)
+	
+	#STDOUT.print "finish"
 	puts
 	print "Do you want to do the selected path? <y/n>: "
 	resp = STDIN.gets.chomp
@@ -245,7 +249,7 @@ if options[:shape] != nil
 end	
 if !options[:automatic]
 	arduino.data_capture(r,target,v,options[:filename])
-	cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
+	cubicspline = PPOcubicspline.new(r2,options[:filename],vi,ai,vf,af,tq,dT)
 	print "Do you want to do the selected path in automatic mode? <y/n>: "
 	resp = STDIN.gets.chomp
 	if resp == "y"
@@ -257,7 +261,7 @@ end
 
 if options[:automatic]
 	if !options[:optimized]
-		cubicspline = PPOcubicspline.new(r,options[:filename],vi,ai,vf,af,tq,dT)
+		cubicspline = PPOcubicspline.new(r2,options[:filename],vi,ai,vf,af,tq,dT)
 		options[:filename] = cubicspline.optfn
 	end
 	arduino.automatic_mode(r,v,options[:filename])
