@@ -152,7 +152,7 @@ af = [0,0,0,0]
 vi = [0,0,0,0]
 vf = [0,0,0,0]
 tq = 0.01
-dT = 0.05
+dT = 0.1
 
 target = config[:home]
 r.ik(target)
@@ -217,7 +217,7 @@ if options[:shape] != nil
 	end
 	path = sh.create(param.merge({:rtm => rtm}))
 	t  = 0.0
-	dt = 0.1
+	dt = 0.3
 	T  = 10.0
 	points = Array.new()
 	crosspoints = Array.new(0,Hash.new)
