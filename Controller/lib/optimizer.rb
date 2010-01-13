@@ -22,10 +22,18 @@ class PPOcubicspline
 		crosspoints = YAML::load_file(filename)
 		crossjoints = Array.new(0,Hash.new)
 		crosspoints.each do |cp|
-			cj = cp.delete(:time)
-		  	puts "Out of range!" if !r.ik(cp)
-			crossjoints << r.joints.push(cj)
-		end
+		joints = Array.new(4)
+		cj = cp.delete(:time)
+			if r.ik(cp)
+				joints = r.joints[0..4]
+				joints << cj
+				puts "joints = #{joints}"
+				crossjoints << joints
+		  	else	
+		  		puts "Out of range!" 
+			end	
+		end		
+		puts crossjoints
 		np = crossjoints.length
 		puts np
 		m    = Matrix.rows(crossjoints)
@@ -57,33 +65,32 @@ class PPOcubicspline
 		for i in 0..np
 			tm[i+1] = tm[i]+h[i]
 		end
-		ap = Array.new(np,0)
+		ap = Array.new(np,0.0)
 		ap[0] = 3.0*h[0]+2.0*h[1]+h[0]**2/h[1]
 		ap[1] = h[1]
 		a << ap
-		ap = Array.new(np,0)
+		ap = Array.new(np,0.0)
 		ap[0] = h[1]-h[0]**2/h[1]
 		ap[1] = 2.0*(h[1]+h[2])
 		ap[2] = h[2]
 		a << ap
 		for i in 2..np-3
-			ap = Array.new(np,0)
+			ap = Array.new(np,0.0)
 			ap[i-1] = h[i]
 			ap[i] 	 = 2.0*(h[i]+h[i+1])
 			ap[i+1] = h[i+1]
 			a << ap
 		end
-		ap = Array.new(np,0)
+		ap = Array.new(np,0.0)
 		ap[np-3] = h[np-2]
 		ap[np-2] = 2.0*(h[np-2]+h[np-1])
 		ap[np-1] = h[np-1]-h[np]**2/h[np-1]
 		a << ap
-		ap = Array.new(np,0)
+		ap = Array.new(np,0.0)
 		ap[np-2] = h[np-1]
 		ap[np-1] = 2.0*h[np-1]+h[np]**2/h[np-1]+3.0*h[np]
 		a << ap
 		a = Matrix.rows(a)
-		
 		for i in 0..3
 			capp = Array.new()
 			capp[0] = 6.0*(m[1,i]/h[1]+m[0,i]/h[0])-6.0*(1/h[0]+1/h[1])*(m[0,i]+h[0]*vi[i]+h[0]**2/3.0*ai[i])-h[0]*ai[i]
@@ -96,7 +103,13 @@ class PPOcubicspline
 			c << capp
 		end
 		c = Matrix.rows(c).transpose
-		f = (a.inv * c).to_a
+		begin
+			f = (a.inv * c).to_a
+		rescue
+			puts "Matrix singular!" if a.singular?
+			puts "Error: #{$!} #{a.inspect}"
+			exit
+		end
 		acc = [ai]
 		for i in 0..np-1
 			acc.push f[i]
