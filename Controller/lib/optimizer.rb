@@ -21,19 +21,28 @@ class PPOcubicspline
 	def initialize(r,filename,vi,ai,vf,af,tq,dT)
 		crosspoints = YAML::load_file(filename)
 		crossjoints = Array.new(0,Hash.new)
+		inrange = 1
 		crosspoints.each do |cp|
-		joints = Array.new(4)
-		cj = cp.delete(:time)
-			if r.ik(cp)
-				joints = r.joints[0..4]
-				joints << cj
-				crossjoints << joints
-		  	else	
-		  		STDOUT.puts "Out of range!" 
-			end	
-		end		
-		#puts crossjoints
+			if inrange != 0
+				joints = Array.new(4)
+				cj = cp.delete(:time)
+				inrange = r.ik(cp)
+					if inrange != 0
+						joints = r.joints[0..4]
+						joints << cj
+						crossjoints << joints
+				  	else
+				  		STDOUT.puts	
+				  		STDOUT.print "WARNING: Many points are out of range. Do you want to continue anyway? <y/n> " 
+				  		resp = STDIN.gets.chomp
+				  		if resp != "y"
+				  			exit(0)	
+				  		end
+					end	
+			end		
+		end
 		np = crossjoints.length
+		File.open(filename, "w") {|f| YAML.dump(crosspoints[0..np-1], f)} if inrange == 0
 		puts "#{np} points"
 		m    = Matrix.rows(crossjoints)
 	
@@ -189,6 +198,11 @@ class PPOcubicspline
  			end
  		end	
  		if !optimized
+ 			#increase = false
+ 			#tr_p.each do |trp|
+ 			#	increase |= tr > trp
+ 			#end
+ 			 
  			ts = tm[0]+k*tq
  			k = 0
  			i = 0
@@ -201,6 +215,7 @@ class PPOcubicspline
  				mat[i][4] += dT
  			end
  			m = Matrix.rows(mat)
+ 			tr_p = tr
  		end
  		#gets
  		#printf(" -- %i -- \n",counter) 		
