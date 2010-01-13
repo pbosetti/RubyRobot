@@ -45,6 +45,7 @@ unsigned int zeros[] = {
   0, 0, 0, 0  };
 
 boolean manual = true;
+unsigned int manual_counter = 0;
 boolean ruby  = false;
 int nbyte = 0;
 int length = 4;
@@ -194,19 +195,8 @@ void loop()
   }
   else { // Automatic mode
     if (Serial.available() > 0) {
-      incoming = Serial.read();
-      Serial.print("nbyte = ");
-      Serial.print(nbyte);
-      Serial.print(" - ");
-      Serial.println(incoming);
-      if (incoming == 'M' && nbyte == 0) {
-        manual = true;
-        lcd.clear();
-        lcd.print("Manual",0,5);
-        lcd.print("mode",1,6);
-        Serial.println("--- Manual Mode ---");        
-      }
-      else {  
+        manual_counter = 0;
+        incoming = Serial.read(); 
         boolean servo;
         //Serial.print(float(incoming));
         //Serial.print(" ");
@@ -248,7 +238,16 @@ void loop()
     	  Servos[3].writeMicroseconds(map(joint,0,S3156_DEGREES,S3156_MIN,S3156_MAX));
           //Serial.println(" ");
         }
-      }
+    }
+    else {
+       manual_counter++; 
+       if (manual_counter > 100) {
+         manual = true;
+         lcd.clear();
+         lcd.print("Manual",0,5);
+         lcd.print("mode",1,6);
+         Serial.println("--- Manual Mode ---");    
+       }
     }
   }
   delay(10);
