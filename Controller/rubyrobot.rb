@@ -151,9 +151,9 @@ af = [0,0,0,0]
 vi = [0,0,0,0]
 vf = [0,0,0,0]
 tq = 0.01
-dT = 0.01
-target = config[:home]
-r.ik(target)
+dT = 0.05
+
+r.ik(config[:home])
 joints = r.joints.map {|v| v.to_deg}
 
 v = RobotViewer.new
@@ -194,7 +194,7 @@ if options[:shape] != nil
 	resp = STDIN.gets.chomp
 	puts
 	if resp == "y"
-		rtm = arduino.get_rtm(r,target,v)
+		rtm = arduino.get_rtm(r,r.home,v)
 	else
 		rtm = Matrix.identity(4)
 	end
@@ -214,8 +214,8 @@ if options[:shape] != nil
 	end
 	path = sh.create(param.merge({:rtm => rtm}))
 	t  = 0.0
-	dt = 0.05
-	T  = 3.0
+	dt = 0.1
+	T  = 10.0
 	points = Array.new()
 	crosspoints = Array.new(0,Hash.new)
 	while t <= T

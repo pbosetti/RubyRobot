@@ -5,31 +5,22 @@
 
 <html>
 <head>
-  <title>special (RobotViewer)</title>
+  <title>reshape (RobotViewer)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 211</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">special</span>
-    <span class="ruby-identifier">special</span> = <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>,<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span><span class="ruby-operator">|</span>
-      <span class="ruby-keyword kw">case</span> <span class="ruby-identifier">key</span>
-      <span class="ruby-keyword kw">when</span> <span class="ruby-constant">GLUT_KEY_HOME</span>
-        <span class="ruby-ivar">@x_rot</span> = <span class="ruby-value">45</span>
-        <span class="ruby-ivar">@y_rot</span> = <span class="ruby-value">-135</span>
-        <span class="ruby-ivar">@z_rot</span> = <span class="ruby-value">0</span>
-        <span class="ruby-ivar">@x_incr</span> = <span class="ruby-value">0</span>
-        <span class="ruby-ivar">@y_incr</span> = <span class="ruby-value">0</span>
-        <span class="ruby-ivar">@scale_factor</span> = <span class="ruby-value">1.0</span>
-      <span class="ruby-keyword kw">when</span> <span class="ruby-constant">GLUT_KEY_LEFT</span>
-        <span class="ruby-ivar">@y_rot</span> <span class="ruby-operator">-=</span> <span class="ruby-value">10</span>
-      <span class="ruby-keyword kw">when</span> <span class="ruby-constant">GLUT_KEY_RIGHT</span>
-        <span class="ruby-ivar">@y_rot</span> <span class="ruby-operator">+=</span> <span class="ruby-value">10</span>
-      <span class="ruby-keyword kw">when</span> <span class="ruby-constant">GLUT_KEY_UP</span>
-        <span class="ruby-ivar">@scale_factor</span> <span class="ruby-operator">*=</span> <span class="ruby-value">1.1</span>
-      <span class="ruby-keyword kw">when</span> <span class="ruby-constant">GLUT_KEY_DOWN</span>
-        <span class="ruby-ivar">@scale_factor</span> <span class="ruby-operator">/=</span> <span class="ruby-value">1.1</span>
-      <span class="ruby-keyword kw">end</span>
+  <pre><span class="ruby-comment cmt"># File lib/viewer.rb, line 176</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">reshape</span>
+    <span class="ruby-identifier">lambda</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">w</span>,<span class="ruby-identifier">h</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">glViewport</span>(<span class="ruby-value">0</span>, <span class="ruby-value">0</span>,  <span class="ruby-identifier">w</span>,  <span class="ruby-identifier">h</span>) 
+      <span class="ruby-identifier">glMatrixMode</span>(<span class="ruby-constant">GL_PROJECTION</span>)
+      <span class="ruby-identifier">glLoadIdentity</span>()
+      <span class="ruby-identifier">gluPerspective</span>(<span class="ruby-value">65.0</span>,  <span class="ruby-identifier">w</span><span class="ruby-operator">/</span> <span class="ruby-identifier">h</span>, <span class="ruby-value">100.0</span>, <span class="ruby-value">5000.0</span>)
+      <span class="ruby-identifier">glMatrixMode</span>(<span class="ruby-constant">GL_MODELVIEW</span>)
+      <span class="ruby-identifier">glLoadIdentity</span>()
+      <span class="ruby-identifier">glTranslate</span>(<span class="ruby-value">0</span>, <span class="ruby-value">0</span>, <span class="ruby-value">-1200</span>)
+      <span class="ruby-ivar">@w</span>, <span class="ruby-ivar">@h</span> = <span class="ruby-identifier">glutGet</span>(<span class="ruby-constant">GLUT_WINDOW_WIDTH</span>), <span class="ruby-identifier">glutGet</span>(<span class="ruby-constant">GLUT_WINDOW_HEIGHT</span>)
     <span class="ruby-keyword kw">end</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
